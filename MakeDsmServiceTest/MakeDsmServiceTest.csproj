@@ -79,6 +79,18 @@
   <ItemGroup>
     <None Include="sampleFiles\m.mk" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="sampleFiles\A\Dog.cpp" />
+    <Content Include="sampleFiles\A\Dog.h" />
+    <Content Include="sampleFiles\A\Cat.cpp" />
+    <Content Include="sampleFiles\A\Cat.h" />
+    <Content Include="sampleFiles\A\IAnimal.cpp" />
+    <Content Include="sampleFiles\A\IAnimal.h" />
+    <Content Include="sampleFiles\A\Factory.cpp" />
+    <Content Include="sampleFiles\A\Factory.h" />
+    <Content Include="sampleFiles\A\m.mk" />
+    <Content Include="sampleFiles\A\GoAnimals.cpp" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
