@@ -19,12 +19,15 @@ namespace MakeDsmServiceTest
             var makeText = Properties.Resources.m;
 
             var path = this.WriteFactorialFile();
-            var results = MakeDsmService.GetDependencies(path, makeText);
-
+            var makeFileName = "TEST_MAKE.mk";
+            var makePath = Path.Combine(path, makeFileName);
+            File.WriteAllText(makePath, makeText);
+            var results = MakeDsmService.GetDependencies(makePath);
+            var dic = results.DependencyDictionary;
             
-            Assert.Contains("factorial.cpp", results["factorial.cpp"]?.ToArray());
-            Assert.Contains("hello.cpp", results["hello.cpp"]?.ToArray());
-            Assert.Contains("main.cpp", results["main.cpp"]?.ToArray());       
+            Assert.Contains("factorial.cpp", dic["factorial.cpp"]?.ToArray());
+            Assert.Contains("hello.cpp", dic["hello.cpp"]?.ToArray());
+            Assert.Contains("main.cpp", dic["main.cpp"]?.ToArray());       
         }
 
         private string WriteFactorialFile()

@@ -53,8 +53,9 @@ namespace MakeDsm
 
             try
             {
-                Dictionary<string, List<string>> dependenciesByModule =
-                MakeDsmService.GetDependencies(this.Path);
+                var result = MakeDsmService.GetDependencies(this.Path);
+                IReadOnlyDictionary<string, List<string>> dependenciesByModule = result.DependencyDictionary;
+                
             }
             catch (Exception ex)
             {
