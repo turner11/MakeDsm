@@ -13,7 +13,7 @@ using System.Xml;
 
 namespace MakeDsm
 {
-    internal partial class Solution
+    internal partial class MySolution
     {
         internal partial class Project
         {
@@ -30,6 +30,11 @@ namespace MakeDsm
             public Project(string path, string id)
             {
                 this.ProjPath = path;
+                if (!File.Exists(path))
+                {
+                    this.Guid = Guid.Empty;
+                    return;
+                };
                 this.Guid = new Guid(id);
                 this.Content = File.ReadAllText(this.ProjPath);
                 var xmlDoc = new XmlDocument();

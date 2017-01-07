@@ -1,4 +1,8 @@
-﻿using Microsoft.CodeAnalysis;
+﻿#if DEBUG
+#define PRINT_DETAILS
+#endif
+
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.FindSymbols;
@@ -14,104 +18,127 @@ namespace MakeDsm
 {
     internal partial class Solution
     {
-        public readonly IReadOnlyCollection<Project> Projects;
         public string Path { get; }
-        private readonly string Content;
+        private IList<Project> Projects { get { return this._solution.Projects.ToList(); } }
+
+        private MSBuildWorkspace _msWorkspace;
+        private Microsoft.CodeAnalysis.Solution _solution;
+
 
         public Solution(string slnPath)
         {
             this.Path = slnPath;
-            this.Content = System.IO.File.ReadAllText(slnPath);
-
             //string solutionPath = @"C:\Users\...\PathToSolution\MySolution.sln";
             string solutionPath = slnPath;
 
-            var msWorkspace = MSBuildWorkspace.Create();
 
-            var solution = msWorkspace.OpenSolutionAsync(solutionPath).Result;
-            foreach (var project in solution.Projects)
-            {
-                var projectTypes = new List<ClassDeclarationSyntax>();
-                foreach (var document in project.Documents)
-                {
-                    Debug.WriteLine(project.Name + "\t\t\t" + document.Name);
-                    var tree = document.GetSyntaxRootAsync().Result;
-                    var methodDecStatements = tree.DescendantNodes().OfType<MethodDeclarationSyntax>().ToList();
-                    var ifStatements = tree.DescendantNodes().OfType<IfStatementSyntax>().ToList();
-                    var typeStatements = tree.DescendantNodes().OfType<ClassDeclarationSyntax>().ToList();
-                    //var a = methodDecStatements.FirstOrDefault()?.ToString();
-                    //var b = ifStatements.FirstOrDefault()?.ToString();
-                    var typeStatement = typeStatements.FirstOrDefault()?.ToString();
-                    
-                    projectTypes.AddRange(typeStatements);
+            this._msWorkspace = MSBuildWorkspace.Create();
+            this._solution = _msWorkspace.OpenSolutionAsync(solutionPath).Result;
+            
+
+        }
+
+        internal IDenpendencies GetDependencies()
+        {
+            
+            List<ClassDeclarationSyntax> solutionTypes = this.GetSolutionClassDeclarations();
 
 
-                  
-                }
-                //TODO: Ithin I am looking only in the declaration ( compilation.GetSemanticModel(t.SyntaxTree);)
-                var res =  projectTypes.ToDictionary(t => t,
+            var res = solutionTypes.ToDictionary(t => t,
                                           t =>
                                           {
                                               var compilation = CSharpCompilation.Create("MyCompilation", new SyntaxTree[] { t.SyntaxTree }, new[] { MetadataReference.CreateFromFile(typeof(object).Assembly.Location) });
                                               var semanticModel = compilation.GetSemanticModel(t.SyntaxTree);
                                               var classSymbols = semanticModel.GetDeclaredSymbol(t);
-                                              var references = SymbolFinder.FindReferencesAsync(classSymbols, solution).Result;
+                                              
+                                              var references = SymbolFinder.FindReferencesAsync(classSymbols, this._solution).Result;
+                                              foreach (var r in references)
+                                              {
+                                                  var loc = SymbolFinder.FindSourceDefinitionAsync(r.Definition, this._solution).Result;
+                                              }
+                                              
                                               return references.ToList();
-                                              });
+                                          });
 
-                var a = res.OrderByDescending(p => p.Value.Count).ToList();
-                for (int idx = 0; idx < a.Count; idx++)
-                {
-                    var curr = a[idx];
-                    var ty = curr.Key.ToString();
 
-                    Debug.WriteLine($"@@@'(X{curr.Value.Count}) {ty}' \n Apperas in:\n" + String.Join("\n",curr.Value.Select(v=> v.Definition.ContainingType)));
-                  
-                    
-                }
-                
-                
-                1.ToString();
+
+#region Testing
+            //var resAAA = solutionTypes.ToDictionary(t => t,
+            //                              t =>
+            //                              {
+            //                                  var references = new List<ReferencedSymbol>();
+            //                                  return references;
+            //                                  var allDocuments = this.Projects.SelectMany(p => p.Documents);
+            //                                  var allTrees = allDocuments.Select(d => d.GetSyntaxTreeAsync().Result);
+            //                                  var compilation = CSharpCompilation.Create("MyCompilation", allTrees, new[] { MetadataReference.CreateFromFile(typeof(object).Assembly.Location) });
+            //                                  var semanticModels = allTrees.Select(tree => compilation.GetSemanticModel(tree));
+
+            //                                  try
+            //                                  {
+            //                                      var classSymbols = semanticModels.Select(model => model.GetDeclaredSymbol(t));
+            //                                      references = classSymbols.SelectMany(cs => SymbolFinder.FindReferencesAsync(cs, _solution).Result).ToList();
+
+            //                                  }
+            //                                  catch (Exception)
+            //                                  {
+            //                                      // throw;
+            //                                  }
+
+            //                                  return references;
+            //                              });  
+#endregion
+
+#if PRINT_DETAILS
+            var a = res.OrderByDescending(p => p.Value.Count).ToList();
+            for (int idx = 0; idx < a.Count; idx++)
+            {
+                var curr = a[idx];
+                var ty = curr.Key.ToString();
+
+                Debug.WriteLine($"@@@'(X{curr.Value.Count}) {ty}' \n Apperas in:\n" + String.Join("\n", curr.Value.Select(v => v.Definition.ContainingType)));
+
+
             }
 
+#endif
 
 
-            this.Projects = this.GetProjects().ToList().AsReadOnly();
+            return new RoslynDenpendencies(res);
         }
 
-          
-        private IList<Project> GetProjects()
+        private List<ClassDeclarationSyntax> GetSolutionClassDeclarations()
         {
-            var pattern = "Project\\(\"\\{[\\w-]*\\}\"\\) = \"([\\w _]*.*)\","+
-                             " \"(.*\\.(cs|vcx|vb)proj)\"" +
-                             ", \"({([a-zA-Z0-9_-]{36})})\"";
-            // "Project\\(\"\\{[\\w-]*\\}\"\\) = \"([\\w _]*.*)\", \"(.*\\.(cs|vcx|vb)proj)\""
-            Regex projReg = new Regex(pattern, RegexOptions.Compiled);
-            var matches = projReg.Matches(Content).Cast<Match>().ToList();
-          
-
-            Func<Match, string> getIdFromMatch = (m) => 
-                        Regex.Match(m.Value, "{.*?}").Value.Replace("{", "").Replace("}", "");
-
-            var projectPaths = matches.Select(x => new
+            var solutionTypes = new List<ClassDeclarationSyntax>();
+            foreach (var project in _solution.Projects)
             {
-                TypeId = getIdFromMatch(x),
-                Path = x.Groups[2].Value,
-                ID =    x.Groups[4].Value.Replace("{", "").Replace("}", "")
-            } )
-                                    .ToList();
-            
-          
-            Func<string, string> getFullPath = (p) =>
-               {
+                var projectTypes = new List<ClassDeclarationSyntax>();
+                foreach (var document in project.Documents)
+                {
 
-                   if (!System.IO.Path.IsPathRooted(p))
-                       p = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(this.Path),
-                          p);
-                   p = System.IO.Path.GetFullPath(p);
-                   return p;
-               };
-            return projectPaths.Select(p => new Project(getFullPath(p.Path), p.ID)).ToList();
+
+                    var tree = document.GetSyntaxRootAsync().Result;
+                    var typeStatements = tree.DescendantNodes().OfType<ClassDeclarationSyntax>().ToList();
+                    //var typeStatement = typeStatements.FirstOrDefault()?.ToString();
+                    //var methodDecStatements = tree.DescendantNodes().OfType<MethodDeclarationSyntax>().ToList();
+                    //var ifStatements = tree.DescendantNodes().OfType<IfStatementSyntax>().ToList();
+                    //var a = methodDecStatements.FirstOrDefault()?.ToString();
+                    //var b = ifStatements.FirstOrDefault()?.ToString();
+
+                    projectTypes.AddRange(typeStatements);
+
+                }
+                Debug.WriteLine($"In project '{project.Name}', Found the following types:\n" + String.Join("\n", projectTypes.Select(t => "\t"+ t.Identifier.Text)));
+                solutionTypes.AddRange(projectTypes);
+            }
+
+            return solutionTypes;
         }
+
+
+
+
+
     }
+
+    
 }

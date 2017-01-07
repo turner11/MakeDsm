@@ -30,6 +30,12 @@ namespace MakeDsm
         {
             InitializeComponent();
             this.txbPath.Text = this.Path;
+
+            MySolution.Project a = new MySolution.Project(null,null);
+            MySolution.Project b = new MySolution.Project(null,null);
+            MySolution.Project c = new MySolution.Project(null,null);
+            MySolution.Project d = new MySolution.Project(null,null);
+            MySolution.Project e = new MySolution.Project(null,null);
         }
 
         private void btnBrowse_Click(object sender, EventArgs e)

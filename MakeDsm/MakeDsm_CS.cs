@@ -20,11 +20,11 @@ namespace MakeDsm
 
       
 
-        protected override Denpendencies GetDependencies()
+        protected override IDenpendencies GetDependencies()
         {
-            var dic = this._solution.Projects.ToDictionary(p => p.Name,p=> p.Dependencies.SelectMany(d=>d.Project.Dependencies));
-            dic.ToString();
-            return null;
+
+            IDenpendencies dep = this._solution.GetDependencies();
+            return dep;
            
         }
     }

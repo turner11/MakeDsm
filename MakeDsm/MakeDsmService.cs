@@ -14,7 +14,7 @@ namespace MakeDsm
         public string CodePath { get; }
         public virtual string Text { get; }
 
-        public static Denpendencies GetDependencies(string path)
+        public static IDenpendencies GetDependencies(string path)
         {
             if (!File.Exists(path))
                 throw new ArgumentException($"File '{path}' does not exist.");
@@ -48,7 +48,7 @@ namespace MakeDsm
             this.Text = File.ReadAllText(path);
         }
 
-        protected abstract Denpendencies GetDependencies();
+        protected abstract IDenpendencies GetDependencies();
     
 
         internal class Module

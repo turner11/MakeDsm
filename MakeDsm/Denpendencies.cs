@@ -3,10 +3,10 @@ using System.Collections.ObjectModel;
 
 namespace MakeDsm
 {
-    public class Denpendencies
+    public class Denpendencies: IDenpendencies
     {
         
-        public  readonly IReadOnlyDictionary<string, List<string>> DependencyDictionary;
+        public IReadOnlyDictionary<string, List<string>> DependencyDictionary { get; }
 
         internal Denpendencies(IDictionary<string, List<string>> dic)
         {

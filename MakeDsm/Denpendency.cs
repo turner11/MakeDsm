@@ -1,6 +1,6 @@
 ﻿namespace MakeDsm
 {
-    internal partial class Solution
+    internal partial class MySolution
     {
         internal partial class Project
         {

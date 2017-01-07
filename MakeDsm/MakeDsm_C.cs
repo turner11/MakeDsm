@@ -221,7 +221,7 @@ namespace MakeDsm
             return success;
         }
 
-        protected override Denpendencies GetDependencies()
+        protected override IDenpendencies GetDependencies()
         {
             var dic = MakeDsm_C.GetDependencies(this.CodePath, this.Text);
             return new Denpendencies(dic);
