@@ -16,7 +16,7 @@ using System.Text.RegularExpressions;
 
 namespace MakeDsm
 {
-    internal partial class Solution
+    internal partial class DotNetSolution
     {
         public string Path { get; }
         private IList<Project> Projects { get { return this._solution.Projects.ToList(); } }
@@ -25,7 +25,7 @@ namespace MakeDsm
         private Microsoft.CodeAnalysis.Solution _solution;
 
 
-        public Solution(string slnPath)
+        public DotNetSolution(string slnPath)
         {
             this.Path = slnPath;
             //string solutionPath = @"C:\Users\...\PathToSolution\MySolution.sln";
@@ -42,22 +42,40 @@ namespace MakeDsm
         {
             
             List<ClassDeclarationSyntax> solutionTypes = this.GetSolutionClassDeclarations();
-
-
+            
             var res = solutionTypes.ToDictionary(t => t,
                                           t =>
                                           {
-                                              var compilation = CSharpCompilation.Create("MyCompilation", new SyntaxTree[] { t.SyntaxTree }, new[] { MetadataReference.CreateFromFile(typeof(object).Assembly.Location) });
-                                              var semanticModel = compilation.GetSemanticModel(t.SyntaxTree);
-                                              var classSymbols = semanticModel.GetDeclaredSymbol(t);
-                                              
-                                              var references = SymbolFinder.FindReferencesAsync(classSymbols, this._solution).Result;
-                                              foreach (var r in references)
+                                              var allrefernces = new List<ReferencedSymbol>();
+                                              var projects = this.Projects;
+                                              foreach (var p in projects)
                                               {
-                                                  var loc = SymbolFinder.FindSourceDefinitionAsync(r.Definition, this._solution).Result;
+                                                  var references = new List<ReferencedSymbol>();
+
+                                                  try
+                                                  {
+
+
+                                                      //var compilation = CSharpCompilation.Create("MyCompilation", new SyntaxTree[] { t.p.SyntaxTree }, new[] { MetadataReference.CreateFromFile(typeof(object).Assembly.Location) });
+                                                      var compilation = p.GetCompilationAsync().Result;
+                                                      var semanticModel = compilation.GetSemanticModel(t.SyntaxTree);
+                                                      var classSymbols = semanticModel.GetDeclaredSymbol(t);
+
+                                                       references = SymbolFinder.FindReferencesAsync(classSymbols, this._solution).Result.ToList();
+                                                      foreach (var r in references)
+                                                      {
+                                                          var loc = SymbolFinder.FindSourceDefinitionAsync(r.Definition, this._solution).Result;
+                                                      }
+                                                  }
+                                                  catch (Exception)
+                                                  {
+
+                                                      //still testing
+                                                  }
+                                                  allrefernces.AddRange(references);
                                               }
                                               
-                                              return references.ToList();
+                                              return allrefernces;
                                           });
 
 

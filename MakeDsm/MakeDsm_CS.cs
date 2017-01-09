@@ -11,10 +11,10 @@ namespace MakeDsm
 {
     internal partial class MakeDsm_CS : MakeDsmService
     {
-       Solution _solution { get; }
+       DotNetSolution _solution { get; }
         public MakeDsm_CS(string path) : base(path)
         {
-            this._solution = new Solution(this.MakeFilePath);
+            this._solution = new DotNetSolution(this.MakeFilePath);
 
         }
 
