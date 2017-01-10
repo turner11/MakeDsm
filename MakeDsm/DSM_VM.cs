@@ -25,7 +25,8 @@ namespace MakeDsm
             var clmNames = dic.Keys.ToList();
 
             var dt = new DataTable();
-            dt.Columns.Add("COLNAME", typeof(string));
+            dt.Columns.Add(COL_NAME, typeof(string));
+            dt.Columns.Add(COL_SORT, typeof(int));
             foreach (var cName in clmNames)
             {
                 dt.Columns.Add(cName, typeof(int));
