@@ -1,4 +1,6 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using MakeDsm;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,6 +10,20 @@ using System.Threading.Tasks;
 
 public static class RoslynExtentions
 {
+
+    public static string GetClassWithNameSpace(this ClassDeclarationSyntax sn)
+    {
+        string ret = sn.Identifier.ToString();
+        NamespaceDeclarationSyntax namespaceDeclarationSyntax = null;
+        if (SyntaxNodeHelper.TryGetParentSyntax(sn, out namespaceDeclarationSyntax))
+        {
+            var namespaceName = namespaceDeclarationSyntax.Name.ToString();
+            var fullClassName = namespaceName + "." + ret;
+            ret = fullClassName;
+        }
+
+        return ret;
+    }
     ///// <summary>
     ///// Finds all references.
     ///// </summary>

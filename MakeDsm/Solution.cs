@@ -12,7 +12,8 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
-using System.Text.RegularExpressions;
+
+
 
 namespace MakeDsm
 {
@@ -40,94 +41,63 @@ namespace MakeDsm
 
         internal IDenpendencies GetDependencies()
         {
-            
-            List<ClassDeclarationSyntax> solutionTypes = this.GetSolutionClassDeclarations();
-            
-            var res = solutionTypes.ToDictionary(t => t,
-                                          t =>
-                                          {
-                                              var allrefernces = new List<ReferencedSymbol>();
-                                              var projects = this.Projects;
-                                              foreach (var p in projects)
-                                              {
-                                                  var references = new List<ReferencedSymbol>();
 
-                                                  try
-                                                  {
+            Dictionary<Project, List<ClassDeclarationSyntax>> solutionTypes = this.GetSolutionClassDeclarations();
 
-
-                                                      //var compilation = CSharpCompilation.Create("MyCompilation", new SyntaxTree[] { t.p.SyntaxTree }, new[] { MetadataReference.CreateFromFile(typeof(object).Assembly.Location) });
-                                                      var compilation = p.GetCompilationAsync().Result;
-                                                      var semanticModel = compilation.GetSemanticModel(t.SyntaxTree);
-                                                      var classSymbols = semanticModel.GetDeclaredSymbol(t);
-
-                                                       references = SymbolFinder.FindReferencesAsync(classSymbols, this._solution).Result.ToList();
-                                                      foreach (var r in references)
-                                                      {
-                                                          var loc = SymbolFinder.FindSourceDefinitionAsync(r.Definition, this._solution).Result;
-                                                      }
-                                                  }
-                                                  catch (Exception)
-                                                  {
-
-                                                      //still testing
-                                                  }
-                                                  allrefernces.AddRange(references);
-                                              }
-                                              
-                                              return allrefernces;
-                                          });
-
-
-
-#region Testing
-            //var resAAA = solutionTypes.ToDictionary(t => t,
-            //                              t =>
-            //                              {
-            //                                  var references = new List<ReferencedSymbol>();
-            //                                  return references;
-            //                                  var allDocuments = this.Projects.SelectMany(p => p.Documents);
-            //                                  var allTrees = allDocuments.Select(d => d.GetSyntaxTreeAsync().Result);
-            //                                  var compilation = CSharpCompilation.Create("MyCompilation", allTrees, new[] { MetadataReference.CreateFromFile(typeof(object).Assembly.Location) });
-            //                                  var semanticModels = allTrees.Select(tree => compilation.GetSemanticModel(tree));
-
-            //                                  try
-            //                                  {
-            //                                      var classSymbols = semanticModels.Select(model => model.GetDeclaredSymbol(t));
-            //                                      references = classSymbols.SelectMany(cs => SymbolFinder.FindReferencesAsync(cs, _solution).Result).ToList();
-
-            //                                  }
-            //                                  catch (Exception)
-            //                                  {
-            //                                      // throw;
-            //                                  }
-
-            //                                  return references;
-            //                              });  
-#endregion
-
-#if PRINT_DETAILS
-            var a = res.OrderByDescending(p => p.Value.Count).ToList();
-            for (int idx = 0; idx < a.Count; idx++)
+            var res = new Dictionary<ClassDeclarationSyntax, List<ReferencedSymbol>>();
+            foreach (var pair in solutionTypes)
             {
-                var curr = a[idx];
-                var ty = curr.Key.ToString();
+                Project proj = pair.Key;
+                List<ClassDeclarationSyntax> types = pair.Value;
+                var compilation = proj.GetCompilationAsync().Result;
+                foreach (var t in types)
+                { 
+                    var references = new List<ReferencedSymbol>();
 
-                Debug.WriteLine($"@@@'(X{curr.Value.Count}) {ty}' \n Apperas in:\n" + String.Join("\n", curr.Value.Select(v => v.Definition.ContainingType)));
+                    try
+                    {
+                        var semanticModel = compilation.GetSemanticModel(t.SyntaxTree);
+                        var classSymbols = semanticModel.GetDeclaredSymbol(t);
 
-
+                        references = SymbolFinder.FindReferencesAsync(classSymbols, this._solution).Result.ToList();
+                        foreach (var r in references)
+                        {
+                            var loc = SymbolFinder.FindSourceDefinitionAsync(r.Definition, this._solution).Result;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        throw;
+                        //still testing
+                    }
+                    res[t] = references;
+                }
             }
 
-#endif
+            //this step is just for breaking the process to few more comprehndable (and readble) steps
+            List<ClassWithReferencess> classesWithReferences = 
+                res.Select(p => new ClassWithReferencess(p.Key, p.Value)).ToList();
+
+            //partial classes will apear multiple times - Unify them!
+            classesWithReferences =
+                classesWithReferences.GroupBy(cr => cr.Name)
+                .Select(g => new ClassWithReferencess(g.First().ClassDeclarationSyntax,g.SelectMany(c=>c.References).ToList()))
+                .ToList();
+
+            List<RoslynDenpendency> dependencies = 
+                classesWithReferences.Select(cr => new RoslynDenpendency(cr)).ToList();
 
 
-            return new RoslynDenpendencies(res);
+
+            return new RoslynReferences(dependencies);
         }
 
-        private List<ClassDeclarationSyntax> GetSolutionClassDeclarations()
+        private Dictionary<Project,List<ClassDeclarationSyntax>> GetSolutionClassDeclarations()
         {
-            var solutionTypes = new List<ClassDeclarationSyntax>();
-            foreach (var project in _solution.Projects)
+            var projs = this._solution.Projects;
+
+            var solutionTypes = projs.ToDictionary(p=> p,p=> new List<ClassDeclarationSyntax>());
+            foreach (var project in projs)
             {
                 var projectTypes = new List<ClassDeclarationSyntax>();
                 foreach (var document in project.Documents)
@@ -146,7 +116,7 @@ namespace MakeDsm
 
                 }
                 Debug.WriteLine($"In project '{project.Name}', Found the following types:\n" + String.Join("\n", projectTypes.Select(t => "\t"+ t.Identifier.Text)));
-                solutionTypes.AddRange(projectTypes);
+                solutionTypes[project].AddRange(projectTypes);
             }
 
             return solutionTypes;

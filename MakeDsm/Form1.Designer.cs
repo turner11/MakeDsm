@@ -40,7 +40,7 @@
             // tlpMain
             // 
             this.tlpMain.ColumnCount = 2;
-            this.tlpMain.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+            this.tlpMain.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tlpMain.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
             this.tlpMain.Controls.Add(this.dsm, 0, 3);
             this.tlpMain.Controls.Add(this.btnAnalyze, 0, 1);
@@ -52,27 +52,36 @@
             this.tlpMain.RowCount = 4;
             this.tlpMain.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tlpMain.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tlpMain.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
-            this.tlpMain.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 66.66666F));
-            this.tlpMain.Size = new System.Drawing.Size(282, 260);
+            this.tlpMain.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 10F));
+            this.tlpMain.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tlpMain.Size = new System.Drawing.Size(478, 434);
             this.tlpMain.TabIndex = 0;
             // 
             // dsm
             // 
+            this.dsm.AllowUserToAddRows = false;
+            this.dsm.AllowUserToDeleteRows = false;
+            this.dsm.AllowUserToResizeColumns = false;
+            this.dsm.AllowUserToResizeRows = false;
+            this.dsm.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.AllCellsExceptHeader;
+            this.dsm.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllCells;
             this.dsm.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dsm.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.dsm.Location = new System.Drawing.Point(3, 128);
+            this.dsm.Location = new System.Drawing.Point(3, 71);
             this.dsm.Name = "dsm";
             this.dsm.RowTemplate.Height = 24;
-            this.dsm.Size = new System.Drawing.Size(240, 129);
+            this.dsm.Size = new System.Drawing.Size(434, 360);
             this.dsm.TabIndex = 0;
+            this.dsm.CellFormatting += new System.Windows.Forms.DataGridViewCellFormattingEventHandler(this.dsm_CellFormatting);
+            this.dsm.CellPainting += new System.Windows.Forms.DataGridViewCellPaintingEventHandler(this.dsm_CellPainting);
+            this.dsm.DataBindingComplete += new System.Windows.Forms.DataGridViewBindingCompleteEventHandler(this.dsm_DataBindingComplete);
             // 
             // btnAnalyze
             // 
             this.btnAnalyze.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnAnalyze.Location = new System.Drawing.Point(3, 32);
             this.btnAnalyze.Name = "btnAnalyze";
-            this.btnAnalyze.Size = new System.Drawing.Size(240, 23);
+            this.btnAnalyze.Size = new System.Drawing.Size(434, 23);
             this.btnAnalyze.TabIndex = 1;
             this.btnAnalyze.Text = "Analyze";
             this.btnAnalyze.UseVisualStyleBackColor = true;
@@ -83,12 +92,12 @@
             this.txbPath.Dock = System.Windows.Forms.DockStyle.Fill;
             this.txbPath.Location = new System.Drawing.Point(3, 3);
             this.txbPath.Name = "txbPath";
-            this.txbPath.Size = new System.Drawing.Size(240, 22);
+            this.txbPath.Size = new System.Drawing.Size(434, 22);
             this.txbPath.TabIndex = 2;
             // 
             // btnBrowse
             // 
-            this.btnBrowse.Location = new System.Drawing.Point(249, 3);
+            this.btnBrowse.Location = new System.Drawing.Point(443, 3);
             this.btnBrowse.Name = "btnBrowse";
             this.btnBrowse.Size = new System.Drawing.Size(32, 23);
             this.btnBrowse.TabIndex = 3;
@@ -101,7 +110,7 @@
             this.AcceptButton = this.btnAnalyze;
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(282, 260);
+            this.ClientSize = new System.Drawing.Size(478, 434);
             this.Controls.Add(this.tlpMain);
             this.Name = "Form1";
             this.tlpMain.ResumeLayout(false);
