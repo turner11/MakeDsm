@@ -53,23 +53,16 @@ namespace MakeDsm
                 foreach (var t in types)
                 { 
                     var references = new List<ReferencedSymbol>();
+                    
+                    var semanticModel = compilation.GetSemanticModel(t.SyntaxTree);
+                    var classSymbols = semanticModel.GetDeclaredSymbol(t);
 
-                    try
+                    references = SymbolFinder.FindReferencesAsync(classSymbols, this._solution).Result.ToList();
+                    foreach (var r in references)
                     {
-                        var semanticModel = compilation.GetSemanticModel(t.SyntaxTree);
-                        var classSymbols = semanticModel.GetDeclaredSymbol(t);
-
-                        references = SymbolFinder.FindReferencesAsync(classSymbols, this._solution).Result.ToList();
-                        foreach (var r in references)
-                        {
-                            var loc = SymbolFinder.FindSourceDefinitionAsync(r.Definition, this._solution).Result;
-                        }
+                        var loc = SymbolFinder.FindSourceDefinitionAsync(r.Definition, this._solution).Result;
                     }
-                    catch (Exception ex)
-                    {
-                        throw;
-                        //still testing
-                    }
+                   
                     res[t] = references;
                 }
             }
