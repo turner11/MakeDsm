@@ -49,8 +49,9 @@ namespace MakeDsm
             {
                 this._modularityVM = value;
                 this.gvModularity.DataSource = this._modularityVM?.ModularityMatrix;
-                this.tcDisplays.SelectedTab = this.tpModularity;
+                this.tcDisplays.TabPages.Remove(this.tpModularity);
                 this.tcDisplays.TabPages.Add(this.tpModularity);
+                this.tcDisplays.SelectedTab = this.tpModularity;
             }
         }
 
@@ -82,10 +83,16 @@ namespace MakeDsm
                 gv.CellFormatting += new DataGridViewCellFormattingEventHandler(this.gv_CellFormatting);
                 gv.CellPainting += new DataGridViewCellPaintingEventHandler(this.gv_CellPainting);
 
+              
+                gv.SelectionChanged += Gv_SelectionChanged;
 
 
             }
         }
+
+      
+
+       
 
         private void btnBrowse_Click(object sender, EventArgs e)
         {
@@ -140,6 +147,8 @@ namespace MakeDsm
         private void gvModularity_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
         {
             this.gvModularity.Columns[ModularityMatrixVM.COL_METHOD_NAME].Visible = false;
+            this.gvModularity.Columns[ModularityMatrixVM.COL_SORT_VALUE].Visible = false;
+            
         }
 
         private void FillRowHeader(DataGridView gv, string rowHeaderColName)
@@ -168,7 +177,45 @@ namespace MakeDsm
                 e.CellStyle.BackColor = Color.LightGray;
             }
         }
+        private void Gv_SelectionChanged(object sender, EventArgs e)
+        {
+            var highlightColor = Color.Orange;
+            var defColor = Color.FromKnownColor(KnownColor.Control);
+            var gv = sender as DataGridView;
+            if (gv == null)
+                return;
 
+            gv.TopLeftHeaderCell.Value = "";
+            foreach (var row in gv.Rows.OfType<DataGridViewRow>())
+                row.HeaderCell.Style.BackColor = defColor;
+
+            foreach (var col in gv.Columns.OfType<DataGridViewColumn>())
+                col.HeaderCell.Style.BackColor = defColor;
+
+            var selectedRow = gv.SelectedCells.OfType<DataGridViewCell>().Select(c => c.OwningRow).Distinct().FirstOrDefault();
+            if (selectedRow != null)
+            {
+                
+                var rowHeader = selectedRow.HeaderCell;
+                rowHeader.Style.BackColor = highlightColor;
+                rowHeader.Style.SelectionBackColor = highlightColor;
+
+                var headerText = selectedRow.HeaderCell.Value + "\n\n";
+
+                var markedCels = selectedRow.Cells.OfType<DataGridViewCell>()
+                                    .Where(c => !String.IsNullOrWhiteSpace((c.Value ?? "").ToString())).ToList();
+                var markedColumns = markedCels.Select(c => c.OwningColumn).Where(col=> col.Visible);
+                foreach (var clm in markedColumns)
+                {
+                    clm.HeaderCell.Style.BackColor = highlightColor;
+                    headerText += clm.HeaderText + "\n";
+
+                }
+
+                gv.TopLeftHeaderCell.Value = headerText;
+            }
+
+        }
         private void gv_CellPainting(object sender, DataGridViewCellPaintingEventArgs e)
         {
             var gv = sender as DataGridView;
