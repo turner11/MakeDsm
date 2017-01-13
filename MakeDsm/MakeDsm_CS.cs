@@ -22,7 +22,6 @@ namespace MakeDsm
 
         protected override IDenpendencies GetDependencies()
         {
-
             IDenpendencies dep = this._solution.GetDependencies();
             return dep;
            

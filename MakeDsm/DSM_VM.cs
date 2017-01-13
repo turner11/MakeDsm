@@ -29,7 +29,7 @@ namespace MakeDsm
             dt.Columns.Add(COL_SORT, typeof(int));
             foreach (var cName in clmNames)
             {
-                dt.Columns.Add(cName, typeof(int));
+                dt.Columns.Add(cName, typeof(string));
             }
 
             foreach (var d in dependencies)
@@ -43,10 +43,16 @@ namespace MakeDsm
                 {
                     var deps = d.Value;
 
-                    if (deps.Contains(cName) || cName == moduleName)
+                    string val = "";
+                    if (cName == moduleName)
                     {
-                        row[cName] = 1;
+                        val = ".";
                     }
+                    else if(deps.Contains(cName) )
+                    {
+                        val= "1";
+                    }
+                    row[cName] = val;
                     //var val = deps.Contains(cName)? 1:0;
                     //row[cName] = val;
                 }
@@ -59,6 +65,11 @@ namespace MakeDsm
             dt.DefaultView.Sort = $"{COL_SORT}";
             dt = dt.DefaultView.ToTable();
             return dt;   
+        }
+
+        public ModularityMatrixVM GetModularityMatrix(string classname)
+        {
+            return new ModularityMatrixVM(this.DependeciesModel.ClassessWithMethods);
         }
     }
 }

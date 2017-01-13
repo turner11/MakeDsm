@@ -165,10 +165,13 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ClassessWithMethods.cs" />
+    <Compile Include="ClassWithMethods.cs" />
     <Compile Include="ClassWithReferencess.cs" />
     <Compile Include="Denpendencies.cs" />
     <Compile Include="Denpendency.cs" />
     <Compile Include="DSM_VM.cs" />
+    <Compile Include="ModularityMatrixVM.cs" />
     <Compile Include="RoslynDenpendency.cs" />
     <Compile Include="RoslynExtentions.cs" />
     <Compile Include="Form1.cs">
@@ -189,6 +192,7 @@
     <Compile Include="Solution.cs" />
     <Compile Include="SyntaxNodeHelper.cs" />
     <Compile Include="WaitCursor.cs" />
+    <Compile Include="WrapperWithClass.cs" />
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>

@@ -1,5 +1,5 @@
 ﻿#if DEBUG
-#define PRINT_DETAILS
+#define PRINT_DETAILSX
 #endif
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -14,15 +14,18 @@ namespace MakeDsm
 {
     internal class RoslynReferences : IDenpendencies
     {
-        
+        public ClassessWithMethods ClassessWithMethods { get; }
+
         public IReadOnlyCollection<RoslynDenpendency> ClassessWithReferences { get; }
         
         public IReadOnlyDictionary<string, List<string>> DependencyDictionary { get; }
 
-        public RoslynReferences(IList<RoslynDenpendency> dependencies)
+        public RoslynReferences(IList<RoslynDenpendency> dependencies, ClassessWithMethods classesWithMethods)
         {
             this.ClassessWithReferences = dependencies.ToList().AsReadOnly();
-            
+            this.ClassessWithMethods = classesWithMethods;
+
+
             var depDic = this.ClassessWithReferences.ToDictionary(dp => dp.Name,
                                                  dp => dp.ReferenceingTypes.Select(rt=> rt.GetClassWithNameSpace()).ToList());
 
@@ -41,6 +44,11 @@ namespace MakeDsm
             var lines = DependencyDictionary.OrderByDescending(p=> p.Value.Count).Select(p => $"{p.Key}: \t\t\t"+String.Join(",\t",p.Value));
             var s = String.Join(Environment.NewLine, lines);
             return s;
+        }
+
+        public ClassWithMethods GetClassMethods(string classname)
+        {
+            return this.ClassessWithMethods.GetClassMethods(classname);
         }
     }
 }

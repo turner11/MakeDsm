@@ -57,11 +57,7 @@ namespace MakeDsm
                     var semanticModel = compilation.GetSemanticModel(t.SyntaxTree);
                     var classSymbols = semanticModel.GetDeclaredSymbol(t);
 
-                    references = SymbolFinder.FindReferencesAsync(classSymbols, this._solution).Result.ToList();
-                    foreach (var r in references)
-                    {
-                        var loc = SymbolFinder.FindSourceDefinitionAsync(r.Definition, this._solution).Result;
-                    }
+                    references = SymbolFinder.FindReferencesAsync(classSymbols, this._solution).Result.ToList();                  
                    
                     res[t] = references;
                 }
@@ -73,16 +69,55 @@ namespace MakeDsm
 
             //partial classes will apear multiple times - Unify them!
             classesWithReferences =
-                classesWithReferences.GroupBy(cr => cr.Name)
+                classesWithReferences.GroupBy(cr => cr.ClassName)
                 .Select(g => new ClassWithReferencess(g.First().ClassDeclarationSyntax,g.SelectMany(c=>c.References).ToList()))
                 .ToList();
 
             List<RoslynDenpendency> dependencies = 
                 classesWithReferences.Select(cr => new RoslynDenpendency(cr)).ToList();
 
+            var classessWithNames = this.GetMethodsByClass();
+
+            var classMethods = dependencies.Select(d=> d._classWithReferences.ClassDeclarationSyntax);
+            return new RoslynReferences(dependencies, classessWithNames);
+        }
+
+        internal ClassessWithMethods GetMethodsByClass()
+        {
+
+            var res = new Dictionary<ClassDeclarationSyntax, List<MemberDeclarationSyntax>>();
+            Dictionary<Project, List<ClassDeclarationSyntax>> solutionTypes = this.GetSolutionClassDeclarations();
 
 
-            return new RoslynReferences(dependencies);
+           
+            //-See more at: http://www.filipekberg.se/2011/10/21/getting-all-methods-from-a-code-file-with-roslyn/#sthash.5RgyiZfG.dpuf
+            foreach (var pair in solutionTypes)
+            {
+                Project proj = pair.Key;
+                List<ClassDeclarationSyntax> types = pair.Value;
+                var compilation = proj.GetCompilationAsync().Result;
+                foreach (var t in types)
+                {
+                    var semanticModel = compilation.GetSemanticModel(t.SyntaxTree);
+                    var classSymbols = semanticModel.GetDeclaredSymbol(t);
+
+                    var methods = t.DescendantNodes().OfType<MethodDeclarationSyntax>().ToList();
+                    var properties = t.DescendantNodes().OfType<PropertyDeclarationSyntax>().ToList();
+
+                    var mathodsAndProperties = new List<MemberDeclarationSyntax>();
+                    mathodsAndProperties.AddRange(methods);
+                    mathodsAndProperties.AddRange(properties);
+
+                    res[t] = mathodsAndProperties;
+                    
+                }
+                
+            }
+
+            var classessWithMethods = res.Select(p => new ClassWithMethods(p.Key, p.Value)).ToList();
+            return new ClassessWithMethods(classessWithMethods);
+
+
         }
 
         private Dictionary<Project,List<ClassDeclarationSyntax>> GetSolutionClassDeclarations()

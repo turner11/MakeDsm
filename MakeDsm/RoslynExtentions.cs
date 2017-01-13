@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 public static class RoslynExtentions
 {
 
-    public static string GetClassWithNameSpace(this ClassDeclarationSyntax sn)
+    public static string GetClassWithNameSpace(this TypeDeclarationSyntax sn)
     {
         string ret = sn.Identifier.ToString();
         NamespaceDeclarationSyntax namespaceDeclarationSyntax = null;

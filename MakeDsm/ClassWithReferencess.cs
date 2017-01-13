@@ -8,16 +8,13 @@ using System.Threading.Tasks;
 
 namespace MakeDsm
 {
-    internal class ClassWithReferencess
+    internal class ClassWithReferencess:WrapperWithClass
     {
-        internal ClassDeclarationSyntax ClassDeclarationSyntax { get; }
+       
         internal IReadOnlyCollection<ReferencedSymbol> References { get; }
 
-        public string Name { get { return this.ClassDeclarationSyntax.GetClassWithNameSpace(); } }
-
-        public ClassWithReferencess(ClassDeclarationSyntax @class, IList<ReferencedSymbol> references)
+        public ClassWithReferencess(ClassDeclarationSyntax @class, IList<ReferencedSymbol> references):base(@class)
         {
-            this.ClassDeclarationSyntax = @class;
             this.References = references.ToList().AsReadOnly();
             
 
@@ -28,19 +25,13 @@ namespace MakeDsm
             {
                 var s = r.Definition.ContainingType;
 
-                //foreach (var sr in s)
-                //{
-                //    var t = r.Locations.First().Location.SourceTree.ToString();
-                //    var a = sr.GetSyntax();
-                //}
-                //FindSourceDefinitionAsync
                 foreach (var l in r.Locations)
                 {
 
                     var t = l.Location.SourceTree;
                     var loc = t.ToString();
-                    var a = t.GetRoot().DescendantNodesAndSelf().OfType<ClassDeclarationSyntax>().Last();
-                    var at = a.ToString();
+                    var a = t.GetRoot().DescendantNodesAndSelf().OfType<ClassDeclarationSyntax>().LastOrDefault();
+                    var at = a?.ToString();
                     //l.Location.SourceSpan.ToString();
                 }
             }
@@ -57,7 +48,7 @@ namespace MakeDsm
 
         public override string ToString()
         {
-            return this.Name;
+            return this.ClassName;
         }
     }
 }

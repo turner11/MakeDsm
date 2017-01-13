@@ -35,18 +35,56 @@ namespace MakeDsm
             get { return this._dsm_vm; }
             set { this._dsm_vm = value;
                 this.dsm.DataSource = this._dsm_vm?.DSM;
+                this._modularityVM = null;
+                this.tcDisplays.TabPages.Remove(this.tpModularity);
                 
             }
         }
+
+        ModularityMatrixVM _modularityVM;
+        ModularityMatrixVM ModularityMatrix_VM
+        {
+            get { return this._modularityVM; }
+            set
+            {
+                this._modularityVM = value;
+                this.gvModularity.DataSource = this._modularityVM?.ModularityMatrix;
+                this.tcDisplays.SelectedTab = this.tpModularity;
+                this.tcDisplays.TabPages.Add(this.tpModularity);
+            }
+        }
+
 
         public Form1()
         {
             InitializeComponent();
             this.txbPath.Text = this.Path;
+            this._DSM_VM = null;
 
-            this.dsm.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.EnableResizing;
-            this.dsm.ColumnHeadersHeight = 50;
-            this.dsm.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCellsExceptHeader;
+            this.SetGridViewsStyle();
+
+            this.dsm.DataBindingComplete += (s,e) => this.FillRowHeader(this.dsm, DSM_VM.COL_NAME);
+            this.gvModularity.DataBindingComplete += (s,e) => this.FillRowHeader(this.gvModularity, ModularityMatrixVM.COL_METHOD_NAME);
+
+
+        }
+
+        private void SetGridViewsStyle()
+        {
+            
+            var gvs = new List<DataGridView> {this.dsm, this.gvModularity };
+            foreach (var gv in gvs)
+            {
+                gv.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.EnableResizing;
+                gv.ColumnHeadersHeight = 50;
+                gv.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCellsExceptHeader;
+
+                gv.CellFormatting += new DataGridViewCellFormattingEventHandler(this.gv_CellFormatting);
+                gv.CellPainting += new DataGridViewCellPaintingEventHandler(this.gv_CellPainting);
+
+
+
+            }
         }
 
         private void btnBrowse_Click(object sender, EventArgs e)
@@ -72,12 +110,15 @@ namespace MakeDsm
             {
                 using (new CursorWait())
                 {
+                    this._DSM_VM = null;
+                    
                     IDenpendencies result = null;
                     await Task.Run(()=> result = MakeDsmService.GetDependencies(this.Path));
                     IReadOnlyDictionary<string, List<string>> dependenciesByModule = result.DependencyDictionary;
 
                     var vm = new DSM_VM(result);
                     this._DSM_VM = vm;
+                    
                     
                 }
 
@@ -94,25 +135,32 @@ namespace MakeDsm
         {
             this.dsm.Columns[DSM_VM.COL_NAME].Visible = false;
             this.dsm.Columns[DSM_VM.COL_SORT].Visible = false;
-            this.FillRowHeader();
+            
+        }
+        private void gvModularity_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
+        {
+            this.gvModularity.Columns[ModularityMatrixVM.COL_METHOD_NAME].Visible = false;
         }
 
-        private void FillRowHeader()
+        private void FillRowHeader(DataGridView gv, string rowHeaderColName)
         {
-            var count = Math.Min(this.dsm.Rows.Count, this.dsm.Columns.Count);
-            for (int i = 0; i < count; i++)
+            
+            for (int i = 0; i < gv.Rows.Count; i++)
             {
-                
-                this.dsm.Rows[i].HeaderCell.Value = this.dsm.Rows[i].Cells[DSM_VM.COL_NAME].Value;
+                var header = gv.Rows[i].Cells[rowHeaderColName].Value;
+                gv.Rows[i].HeaderCell.Value = header;
             }
         }
 
-        private void dsm_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
+        private void gv_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
+            var gv = sender as DataGridView;
+            if (gv == null)
+                return;
             if (e.ColumnIndex < 0 ||  e.RowIndex < 0)
                 return;
 
-            var objVal = this.dsm.Rows[e.RowIndex].Cells[e.ColumnIndex].Value ?? "";
+            var objVal = gv.Rows[e.RowIndex].Cells[e.ColumnIndex].Value ?? "";
             int val;
             int.TryParse(objVal.ToString(), out val);
             if (val == 1)
@@ -121,17 +169,20 @@ namespace MakeDsm
             }
         }
 
-        private void dsm_CellPainting(object sender, DataGridViewCellPaintingEventArgs e)
+        private void gv_CellPainting(object sender, DataGridViewCellPaintingEventArgs e)
         {
+            var gv = sender as DataGridView;
+            if (gv == null)
+                return;
             // check that we are in a header cell!
             if (e.RowIndex == -1 && e.ColumnIndex >= 0)
             {
                 e.PaintBackground(e.ClipBounds, true);
-                Rectangle rect = this.dsm.GetColumnDisplayRectangle(e.ColumnIndex, true);
+                Rectangle rect = gv.GetColumnDisplayRectangle(e.ColumnIndex, true);
                 Size titleSize = TextRenderer.MeasureText(e.Value.ToString(), e.CellStyle.Font);
-                if (this.dsm.ColumnHeadersHeight < titleSize.Width)
+                if (gv.ColumnHeadersHeight < titleSize.Width)
                 {
-                    this.dsm.ColumnHeadersHeight = titleSize.Width;
+                    gv.ColumnHeadersHeight = titleSize.Width;
                 }
 
                 e.Graphics.TranslateTransform(0, titleSize.Width);
@@ -141,7 +192,7 @@ namespace MakeDsm
                 // ColumnHeadersHeight minus the current text width. ColumnHeadersHeight is the
                 // maximum of all the columns since we paint cells twice - though this fact
                 // may not be true in all usages!   
-                e.Graphics.DrawString(e.Value.ToString(), this.Font, Brushes.Black, new PointF(rect.Y - (dsm.ColumnHeadersHeight - titleSize.Width), rect.X));
+                e.Graphics.DrawString(e.Value.ToString(), this.Font, Brushes.Black, new PointF(rect.Y - (gv.ColumnHeadersHeight - titleSize.Width), rect.X));
 
                 // The old line for comparison
                 //e.Graphics.DrawString(e.Value.ToString(), this.Font, Brushes.Black, new PointF(rect.Y, rect.X));
@@ -178,5 +229,20 @@ namespace MakeDsm
                 
             }
         }
+
+        private void dsm_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+           
+            if (e.RowIndex < 0)
+                return;
+            
+            string className = this.dsm.Rows[e.RowIndex].Cells[DSM_VM.COL_NAME].Value as string;
+            if (String.IsNullOrWhiteSpace(className))
+                return;
+
+            this.ModularityMatrix_VM = this._dsm_vm.GetModularityMatrix(className);
+        }
+
+     
     }
 }
