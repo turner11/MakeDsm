@@ -67,7 +67,7 @@ namespace MakeDsm
             return dt;   
         }
 
-        public ModularityMatrixVM GetModularityMatrix(string classname)
+        public ModularityMatrixVM GetModularityMatrix()
         {
             return new ModularityMatrixVM(this.DependeciesModel.ClassessWithMethods);
         }

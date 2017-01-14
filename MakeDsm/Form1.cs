@@ -36,7 +36,6 @@ namespace MakeDsm
             set { this._dsm_vm = value;
                 this.dsm.DataSource = this._dsm_vm?.DSM;
                 this._modularityVM = null;
-                this.tcDisplays.TabPages.Remove(this.tpModularity);
                 
             }
         }
@@ -49,9 +48,6 @@ namespace MakeDsm
             {
                 this._modularityVM = value;
                 this.gvModularity.DataSource = this._modularityVM?.ModularityMatrix;
-                this.tcDisplays.TabPages.Remove(this.tpModularity);
-                this.tcDisplays.TabPages.Add(this.tpModularity);
-                this.tcDisplays.SelectedTab = this.tpModularity;
             }
         }
 
@@ -82,17 +78,24 @@ namespace MakeDsm
 
                 gv.CellFormatting += new DataGridViewCellFormattingEventHandler(this.gv_CellFormatting);
                 gv.CellPainting += new DataGridViewCellPaintingEventHandler(this.gv_CellPainting);
+                gv.DataBindingComplete += this.gv_DataBindingComplete;
 
               
                 gv.SelectionChanged += Gv_SelectionChanged;
 
-
             }
+
+          
         }
 
-      
-
-       
+        private void gv_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
+        {
+            var gv = sender as DataGridView;
+            if (gv == null)
+                return;
+            foreach (DataGridViewColumn col in gv.Columns)
+                col.SortMode = DataGridViewColumnSortMode.NotSortable;
+        }
 
         private void btnBrowse_Click(object sender, EventArgs e)
         {
@@ -287,9 +290,15 @@ namespace MakeDsm
             if (String.IsNullOrWhiteSpace(className))
                 return;
 
-            this.ModularityMatrix_VM = this._dsm_vm.GetModularityMatrix(className);
+          
         }
 
-     
+        private void tcDisplays_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (this.tcDisplays.SelectedTab == this.tpModularity)
+            {
+                this.ModularityMatrix_VM = this._dsm_vm.GetModularityMatrix();
+            }
+        }
     }
 }

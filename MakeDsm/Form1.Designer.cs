@@ -104,6 +104,7 @@
             this.tcDisplays.SelectedIndex = 0;
             this.tcDisplays.Size = new System.Drawing.Size(434, 360);
             this.tcDisplays.TabIndex = 4;
+            this.tcDisplays.SelectedIndexChanged += new System.EventHandler(this.tcDisplays_SelectedIndexChanged);
             // 
             // tpDSM
             // 
