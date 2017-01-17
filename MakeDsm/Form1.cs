@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MakeDsm.LinearDependencies;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -14,7 +15,7 @@ namespace MakeDsm
     public partial class Form1 : Form
     {
 
-
+        event EventHandler ModularityVM_Changed;
         string Path
         {
             get
@@ -48,6 +49,8 @@ namespace MakeDsm
             {
                 this._modularityVM = value;
                 this.gvModularity.DataSource = this._modularityVM?.ModularityMatrix;
+                this.ModularityVM_Changed?.Invoke(this,EventArgs.Empty);
+                
             }
         }
 
@@ -58,12 +61,42 @@ namespace MakeDsm
             this.txbPath.Text = this.Path;
             this._DSM_VM = null;
 
+
+            this.ModularityVM_Changed += Form1_ModularityVM_Changed;
             this.SetGridViewsStyle();
 
             this.dsm.DataBindingComplete += (s,e) => this.FillRowHeader(this.dsm, DSM_VM.COL_NAME);
             this.gvModularity.DataBindingComplete += (s,e) => this.FillRowHeader(this.gvModularity, ModularityMatrixVM.COL_METHOD_NAME);
 
 
+        }
+
+        private async void Form1_ModularityVM_Changed(object sender, EventArgs e)
+        {
+            var vm = this.ModularityMatrix_VM;
+            if (vm != null)
+            {
+                Tuple<LinearRowDependencyLocator, LinearColumnDependencyLocator> locator = null;
+                 await Task.Run(()=> locator = LinearDependencyLocator<object>.Factory(vm));
+                locator.ToString();
+
+                LinearRowDependencyLocator rowLocator = locator.Item1;
+                LinearColumnDependencyLocator colLocator = locator.Item2;
+                var rows = rowLocator.LinearDependedRows.ToDictionary(p => p.Key[ModularityMatrixVM.COL_METHOD_NAME].ToString(),p => p.Value.Select(r => r[ModularityMatrixVM.COL_METHOD_NAME].ToString()));
+                var strRows = rows.Select(p => p.Key.ToString() + "\n" + String.Join("\n\t,", p.Value));
+
+                var cols = colLocator.LinearDependedRows.ToDictionary(p => p.Key.ColumnName, p => p.Value.Select(c => c.ColumnName));
+                var strCols = cols.Select(p => p.Key.ToString() + "\n" + String.Join("\n\t,", p.Value));
+
+                var msg1 = String.Join("\n\n", strRows);
+                var msg2 = String.Join("\n\n", strCols);
+
+                System.Diagnostics.Debug.WriteLine("@@@@@@@@@@@@@@@@@@@@@@@@@@ Rows:\n"+msg1);
+                System.Diagnostics.Debug.WriteLine("@@@@@@@@@@@@@@@@@@@@@@@@@@ Cols:\n" + msg2);
+                MessageBox.Show(msg1);
+                MessageBox.Show(msg2);
+
+            }
         }
 
         private void SetGridViewsStyle()
@@ -254,32 +287,7 @@ namespace MakeDsm
             }
         }
 
-        private class SortByColumOrder : IComparer<DataGridViewRow>, System.Collections.IComparer
-        {
-            private readonly DataGridView gv;
-
-            public SortByColumOrder(DataGridView gv)
-            {
-                this.gv = gv;
-            }
-
-            public int Compare(object x, object y)
-            {
-                return Compare(x as DataGridViewRow, y as DataGridViewRow);
-            }
-
-            public int Compare(DataGridViewRow x, DataGridViewRow y)
-            {
-                var nameX = x.Cells[DSM_VM.COL_NAME].Value.ToString();
-                var nameY = y.Cells[DSM_VM.COL_NAME].Value.ToString();
-                var idxX = this.gv.Columns[nameX].Index;
-                var idxY = this.gv.Columns[nameY].Index;
-
-                return idxX-idxY;
-                
-            }
-        }
-
+      
         private void dsm_CellClick(object sender, DataGridViewCellEventArgs e)
         {
            

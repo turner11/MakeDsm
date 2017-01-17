@@ -172,6 +172,9 @@
     <Compile Include="Denpendency.cs" />
     <Compile Include="DSM_VM.cs" />
     <Compile Include="Extensions.cs" />
+    <Compile Include="LinearDependencies\LinearColumnDependencyLocator.cs" />
+    <Compile Include="LinearDependencies\LinearRowDependencyLocator.cs" />
+    <Compile Include="LinearDependencies\LinearDependencyLocator.cs" />
     <Compile Include="ModularityMatrixVM.cs" />
     <Compile Include="RoslynDenpendency.cs" />
     <Compile Include="RoslynExtentions.cs" />

@@ -60,5 +60,19 @@ public static class Extensions
         return new string(' ', diff / 2) + text + new string(' ', (int)(diff / 2.0 + 0.5));
 
     }
+
+    public static IOrderedEnumerable<IEnumerable<T>> GetOrederedPowerSet<T>(this IList<T> list)
+    {
+        return GetPowerSet(list).OrderBy(en => en.Count());
+    }
+
+    public static IEnumerable<IEnumerable<T>> GetPowerSet<T>(this IList<T> list)
+    {
+        return from m in Enumerable.Range(0, 1 << list.Count)
+               select
+                   from i in Enumerable.Range(0, list.Count)
+                   where (m & (1 << i)) != 0
+                   select list[i];
+    }
 }
 

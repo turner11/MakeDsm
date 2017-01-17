@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace MakeDsm
 {
-    internal class ModularityMatrixVM
+    public class ModularityMatrixVM
     {
         public const string COL_METHOD_NAME ="METHOD NAME";
         public const string COL_SORT_VALUE ="SORT VALUE";

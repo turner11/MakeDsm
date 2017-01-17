@@ -40,7 +40,7 @@ namespace MakeDsm
             {
                 var currModule = modules[i];
 
-                var allCombinations = GetOrederedPowerSet(resolvedModules)
+                var allCombinations = resolvedModules.GetOrederedPowerSet()
                                         .Select(c => c.ToList()).ToList();
 
                 var modulesForTest = allCombinations
@@ -101,20 +101,10 @@ namespace MakeDsm
             return txt;
         }
 
-        static IEnumerable<IEnumerable<T>> GetPowerSet<T>(List<T> list)
-        {
-            return from m in Enumerable.Range(0, 1 << list.Count)
-                   select
-                       from i in Enumerable.Range(0, list.Count)
-                       where (m & (1 << i)) != 0
-                       select list[i];
-        }
+     
 
 
-        static IOrderedEnumerable<IEnumerable<T>> GetOrederedPowerSet<T>(List<T> list)
-        {
-            return GetPowerSet(list).OrderBy(en => en.Count());
-        }
+       
 
         private static List<string> GetAllModuleNames(string makeFileText)
         {
