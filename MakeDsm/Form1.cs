@@ -78,15 +78,14 @@ namespace MakeDsm
             {
                 Tuple<LinearRowDependencyLocator, LinearColumnDependencyLocator> locator = null;
                  await Task.Run(()=> locator = LinearDependencyLocator<object>.Factory(vm));
-                locator.ToString();
 
                 LinearRowDependencyLocator rowLocator = locator.Item1;
                 LinearColumnDependencyLocator colLocator = locator.Item2;
                 var rows = rowLocator.LinearDependedRows.ToDictionary(p => p.Key[ModularityMatrixVM.COL_METHOD_NAME].ToString(),p => p.Value.Select(r => r[ModularityMatrixVM.COL_METHOD_NAME].ToString()));
-                var strRows = rows.Select(p => p.Key.ToString() + "\n" + String.Join("\n\t,", p.Value));
+                var strRows = rows.Select(p => p.Key.ToString() + "\n\t" + String.Join("\n\t,", p.Value));
 
                 var cols = colLocator.LinearDependedRows.ToDictionary(p => p.Key.ColumnName, p => p.Value.Select(c => c.ColumnName));
-                var strCols = cols.Select(p => p.Key.ToString() + "\n" + String.Join("\n\t,", p.Value));
+                var strCols = cols.Select(p => p.Key.ToString() + "\n\t" + String.Join("\n\t,", p.Value));
 
                 var msg1 = String.Join("\n\n", strRows);
                 var msg2 = String.Join("\n\n", strCols);

@@ -31,17 +31,22 @@ namespace MakeDsm.LinearDependencies
             //var powerset = this.Rows.GetOrederedPowerSet().Select(s => s.ToList()).Where(s=> s.Count > 0).Reverse().ToList();
             var powerset = this.Items.GetOrederedPowerSet().Select(s => s.ToList()).Where(s => s.Count > 0).ToList();
             var depDic = new ConcurrentDictionary<T, ReadOnlyCollection<T>>();
-
+            var setByCount = powerset.GroupBy(s=> s.Count);
+            
 
             Action<T> AddDependenciesForRow = (item) =>
             {
-                var setsWithOutRow = powerset.Where(s => !s.Contains(item)).ToList();
                 var lRow = this.ToLogicalArray(item);
                 if (lRow == null)
                 {
                     Debug.Fail("Got a null item");
                     return;
                 }
+                var itemCount = lRow.Count(b=> b);
+                
+                var candidates = setByCount.Where(p=> p.Key <= itemCount).SelectMany(p=> p.ToList());//for performance
+
+                var setsWithOutRow = candidates.Where(s => !s.Contains(item)).ToList();
                 foreach (var currSet in setsWithOutRow)
                 {
                     
