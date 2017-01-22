@@ -28,15 +28,20 @@ namespace MakeDsm.LinearDependencies
 
         internal void Init()
         {
+           
+            var maxCount = this.Items.Count;//for optimization...
             //var powerset = this.Rows.GetOrederedPowerSet().Select(s => s.ToList()).Where(s=> s.Count > 0).Reverse().ToList();
-            var powerset = this.Items.GetOrederedPowerSet().Select(s => s.ToList()).Where(s => s.Count > 0).ToList();
+            var powerset = this.Items.GetPowerSet().Select(s => s.ToList()).Where(s => s.Count > 0).ToList();
+           
             var depDic = new ConcurrentDictionary<T, ReadOnlyCollection<T>>();
             var setByCount = powerset.GroupBy(s=> s.Count);
+
+
             
 
             Action<T> AddDependenciesForRow = (item) =>
             {
-                var lRow = this.ToLogicalArray(item);
+                var lRow = ToLogicalArray(item);
                 if (lRow == null)
                 {
                     Debug.Fail("Got a null item");
@@ -45,18 +50,21 @@ namespace MakeDsm.LinearDependencies
                 var itemCount = lRow.Count(b=> b);
                 
                 var candidates = setByCount.Where(p=> p.Key <= itemCount).SelectMany(p=> p.ToList());//for performance
-
                 var setsWithOutRow = candidates.Where(s => !s.Contains(item)).ToList();
                 foreach (var currSet in setsWithOutRow)
                 {
                     
-                    var lSet = currSet.Select(r => this.ToLogicalArray(r)).ToList();
+                    var lSet = currSet.Select(r => ToLogicalArray(r)).ToList();
                     var unionResult = lSet.Aggregate((l1, l2) => l1.Zip(l2, (b, l) => b || l).ToArray());
                     bool isLinearDependent = unionResult.SequenceEqual(lRow);
                     if (isLinearDependent)
                     {
-                        if (!depDic.ContainsKey(item) || depDic[item].Count < currSet.Count) //add the longer one
+                        if (!depDic.ContainsKey(item)) //add the longer one
                             depDic[item] = currSet.AsReadOnly();
+                        else
+                        {
+                            depDic[item] = currSet.Union(depDic[item]).Distinct().ToList().AsReadOnly();
+                        }
                     }
                 }
             };
@@ -69,8 +77,8 @@ namespace MakeDsm.LinearDependencies
             }
             else
             {
-                foreach (var row in this.Items)
-                    AddDependenciesForRow(row);
+                foreach (var item in this.Items)
+                    AddDependenciesForRow(item);
             }
 
 

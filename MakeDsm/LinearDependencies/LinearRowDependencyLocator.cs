@@ -15,7 +15,7 @@ namespace MakeDsm.LinearDependencies
         
 
         //NOTE: this has some assumptions! (sorting is negative, no other int columns that might be 1...)
-        Func<DataRow, bool[]> rowToLogicalArray = (r) => r.ItemArray.Select(obj => (obj ?? "0").ToString() != "1").ToArray();
+        Func<DataRow, bool[]> rowToLogicalArray = (r) => r.ItemArray.Select(obj => (obj ?? "0").ToString() == "1").ToArray();
 
         internal LinearRowDependencyLocator(IList<DataRow> rows):base(rows)
         {

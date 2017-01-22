@@ -15,6 +15,7 @@ namespace MakeDsm
     public partial class Form1 : Form
     {
 
+        
         event EventHandler ModularityVM_Changed;
         string Path
         {
@@ -36,12 +37,16 @@ namespace MakeDsm
             get { return this._dsm_vm; }
             set { this._dsm_vm = value;
                 this.dsm.DataSource = this._dsm_vm?.DSM;
-                this._modularityVM = null;
+                this.ModularityMatrix_VM = this._DSM_VM?.GetModularityMatrix();
+                
                 
             }
         }
 
         ModularityMatrixVM _modularityVM;
+        private RowDependencyHighlighter _rowLinearDependencyHighLighter;
+        private ColumnDependencyHighlighter _colLinearDependencyHighliter;
+
         ModularityMatrixVM ModularityMatrix_VM
         {
             get { return this._modularityVM; }
@@ -71,31 +76,71 @@ namespace MakeDsm
 
         }
 
+        
+
         private async void Form1_ModularityVM_Changed(object sender, EventArgs e)
         {
             var vm = this.ModularityMatrix_VM;
             if (vm != null)
             {
-                Tuple<LinearRowDependencyLocator, LinearColumnDependencyLocator> locator = null;
-                 await Task.Run(()=> locator = LinearDependencyLocator<object>.Factory(vm));
+                try
+                {
+                    this.SetDependencyControlEnableState(false);
 
-                LinearRowDependencyLocator rowLocator = locator.Item1;
-                LinearColumnDependencyLocator colLocator = locator.Item2;
-                var rows = rowLocator.LinearDependedRows.ToDictionary(p => p.Key[ModularityMatrixVM.COL_METHOD_NAME].ToString(),p => p.Value.Select(r => r[ModularityMatrixVM.COL_METHOD_NAME].ToString()));
-                var strRows = rows.Select(p => p.Key.ToString() + "\n\t" + String.Join("\n\t,", p.Value));
+                    Tuple<LinearRowDependencyLocator, LinearColumnDependencyLocator> locator = null;
+                    await Task.Run(() => locator = LinearDependencyLocator<object>.Factory(vm));
 
-                var cols = colLocator.LinearDependedRows.ToDictionary(p => p.Key.ColumnName, p => p.Value.Select(c => c.ColumnName));
-                var strCols = cols.Select(p => p.Key.ToString() + "\n\t" + String.Join("\n\t,", p.Value));
+                    var rowLocator = locator.Item1;
+                    var colLocator = locator.Item2;
+                    this._rowLinearDependencyHighLighter = new RowDependencyHighlighter(this.gvModularity, rowLocator);
+                    this._colLinearDependencyHighliter = new ColumnDependencyHighlighter(this.gvModularity, colLocator);
+                    this.ResetHighlighters();
 
-                var msg1 = String.Join("\n\n", strRows);
-                var msg2 = String.Join("\n\n", strCols);
 
-                System.Diagnostics.Debug.WriteLine("@@@@@@@@@@@@@@@@@@@@@@@@@@ Rows:\n"+msg1);
-                System.Diagnostics.Debug.WriteLine("@@@@@@@@@@@@@@@@@@@@@@@@@@ Cols:\n" + msg2);
-                MessageBox.Show(msg1);
-                MessageBox.Show(msg2);
+                    //var rows = rowLocator.LinearDependedRows.ToDictionary(p => p.Key[ModularityMatrixVM.COL_METHOD_NAME].ToString(), p => p.Value.Select(r => r[ModularityMatrixVM.COL_METHOD_NAME].ToString()));
+                    //var strRows = rows.Select(p => p.Key.ToString() + "\n\t" + String.Join("\n\t,", p.Value));
+
+                    //var cols = colLocator.LinearDependedRows.ToDictionary(p => p.Key.ColumnName, p => p.Value.Select(c => c.ColumnName));
+                    //var strCols = cols.Select(p => p.Key.ToString() + "\n\t" + String.Join("\n\t,", p.Value));
+
+                    //var msg1 = String.Join("\n\n", strRows);
+                    //var msg2 = String.Join("\n\n", strCols);
+
+                    //System.Diagnostics.Debug.WriteLine("@@@@@@@@@@@@@@@@@@@@@@@@@@ Rows:\n" + msg1);
+                    //System.Diagnostics.Debug.WriteLine("@@@@@@@@@@@@@@@@@@@@@@@@@@ Cols:\n" + msg2);
+                    //MessageBox.Show(msg1);
+                    //MessageBox.Show(msg2);
+                    this.SetDependencyControlEnableState(true);
+                }
+                catch (Exception ex)
+                {
+
+                    this.SetDependencyControlEnableState(false);
+                    MessageBox.Show("An error occurred while getting dependencies.\n"+ex.ToString());
+                }
 
             }
+            else
+            {
+                this.SetDependencyControlEnableState(false);
+            }
+        }
+
+        private void SetDependencyControlEnableState(bool setEnable)
+        {
+            //var btns = new List<Button>
+            //{
+            //    this.btnDown,
+            //    this.btnUp,
+            //    this.btnRight,
+            //    this.btnLeft
+            //};
+
+            //foreach (var btn in btns)
+            //{
+            //    btn.InvokeIfRequired(() => btn.Enabled = setEnable);
+            //}
+            this.pnlButtons.Visible = setEnable;
         }
 
         private void SetGridViewsStyle()
@@ -152,6 +197,7 @@ namespace MakeDsm
             {
                 using (new CursorWait())
                 {
+                    this.btnAnalyze.Enabled = false;
                     this._DSM_VM = null;
                     
                     IDenpendencies result = null;
@@ -168,6 +214,10 @@ namespace MakeDsm
             catch (Exception ex)
             {
                 MessageBox.Show($"An error occured:\n{ex.Message}");
+            }finally
+            {
+                this.btnAnalyze.Enabled = true;
+
             }
 
 
@@ -304,8 +354,39 @@ namespace MakeDsm
         {
             if (this.tcDisplays.SelectedTab == this.tpModularity)
             {
-                this.ModularityMatrix_VM = this._dsm_vm.GetModularityMatrix();
+                //this.ModularityMatrix_VM = this._dsm_vm?.GetModularityMatrix();
             }
+        }
+
+        private void btnDown_Click(object sender, EventArgs e)
+        {
+            this.ResetHighlighters();
+            this._rowLinearDependencyHighLighter?.Next();
+
+        }
+
+        private void btnUp_Click(object sender, EventArgs e)
+        {
+            this.ResetHighlighters();
+            this._rowLinearDependencyHighLighter?.Previous();
+        }
+
+        private void btnRight_Click(object sender, EventArgs e)
+        {
+            this.ResetHighlighters();
+            this._colLinearDependencyHighliter?.Next();
+        }
+
+        private void btnLeft_Click(object sender, EventArgs e)
+        {
+            this.ResetHighlighters();
+            this._colLinearDependencyHighliter?.Previous();
+        }
+
+        private void ResetHighlighters()
+        {
+            this._colLinearDependencyHighliter?.Reset();
+            this._rowLinearDependencyHighLighter?.Reset();
         }
     }
 }

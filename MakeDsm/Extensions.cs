@@ -4,7 +4,7 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
+using System.Windows.Forms;
 
 public static class Extensions
 {
@@ -66,13 +66,33 @@ public static class Extensions
         return GetPowerSet(list).OrderBy(en => en.Count());
     }
 
-    public static IEnumerable<IEnumerable<T>> GetPowerSet<T>(this IList<T> list)
+    public static IEnumerable<IEnumerable<T>> GetPowerSet<T>(this IList<T> list, int limitGroupSize = int.MaxValue)
     {
-        return from m in Enumerable.Range(0, 1 << list.Count)
+      
+         return from m in Enumerable.Range(0, 1 << list.Count)
                select
                    from i in Enumerable.Range(0, list.Count)
                    where (m & (1 << i)) != 0
                    select list[i];
+         
+    }
+
+
+}
+
+public static class UIExtensions
+{
+    public static void InvokeIfRequired(this Control obj, MethodInvoker action)
+    {
+        if (obj.InvokeRequired)
+        {
+            var args = new object[0];
+            obj.Invoke(action, args);
+        }
+        else
+        {
+            action();
+        }
     }
 }
 

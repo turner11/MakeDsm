@@ -168,8 +168,10 @@
     <Compile Include="ClassessWithMethods.cs" />
     <Compile Include="ClassWithMethods.cs" />
     <Compile Include="ClassWithReferencess.cs" />
+    <Compile Include="ColumnDependencyHighlighter.cs" />
     <Compile Include="Denpendencies.cs" />
     <Compile Include="Denpendency.cs" />
+    <Compile Include="DependencyHighlighter.cs" />
     <Compile Include="DSM_VM.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="LinearDependencies\LinearColumnDependencyLocator.cs" />
@@ -193,6 +195,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="MySolution.cs" />
     <Compile Include="RoslynReferences.cs" />
+    <Compile Include="RowDependencyHighlighter.cs" />
     <Compile Include="Solution.cs" />
     <Compile Include="SyntaxNodeHelper.cs" />
     <Compile Include="WaitCursor.cs" />
@@ -223,6 +226,18 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Arrow Down 1.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Arrow Left 1.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Arrow Right 1.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Arrow Up 1.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
