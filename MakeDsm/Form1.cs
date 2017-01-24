@@ -72,11 +72,28 @@ namespace MakeDsm
 
             this.dsm.DataBindingComplete += (s,e) => this.FillRowHeader(this.dsm, DSM_VM.COL_NAME);
             this.gvModularity.DataBindingComplete += (s,e) => this.FillRowHeader(this.gvModularity, ModularityMatrixVM.COL_METHOD_NAME);
+            this.pnlButtons.Invalidated += PnlButtons_Invalidated;
 
 
         }
 
-        
+        private void PnlButtons_Invalidated(object sender, InvalidateEventArgs e)
+        {
+            var btns = new List<Button>
+            {
+                this.btnDown,
+                this.btnUp,
+                this.btnRight,
+                this.btnLeft
+            };
+
+            foreach (var btn in btns)
+            {
+                btn.InvokeIfRequired(() => btn.Refresh());
+            }
+        }
+
+       
 
         private async void Form1_ModularityVM_Changed(object sender, EventArgs e)
         {
@@ -141,6 +158,7 @@ namespace MakeDsm
             //    btn.InvokeIfRequired(() => btn.Enabled = setEnable);
             //}
             this.pnlButtons.Visible = setEnable;
+            this.pnlButtons.Refresh();
         }
 
         private void SetGridViewsStyle()
@@ -159,7 +177,7 @@ namespace MakeDsm
 
               
                 gv.SelectionChanged += Gv_SelectionChanged;
-                
+                gv.DoubleBuffered(true);
             }
 
           
@@ -373,6 +391,7 @@ namespace MakeDsm
         {
             this.ResetHighlighters();
             this._rowLinearDependencyHighLighter?.Next();
+            this.pnlButtons.Refresh();
 
         }
 
@@ -380,24 +399,29 @@ namespace MakeDsm
         {
             this.ResetHighlighters();
             this._rowLinearDependencyHighLighter?.Previous();
+            this.pnlButtons.Refresh();
+
         }
 
         private void btnRight_Click(object sender, EventArgs e)
         {
             this.ResetHighlighters();
             this._colLinearDependencyHighliter?.Next();
+            this.pnlButtons.Refresh();
         }
 
         private void btnLeft_Click(object sender, EventArgs e)
         {
             this.ResetHighlighters();
             this._colLinearDependencyHighliter?.Previous();
+            this.pnlButtons.Refresh();
         }
 
         private void ResetHighlighters()
         {
             this._colLinearDependencyHighliter?.Reset();
             this._rowLinearDependencyHighLighter?.Reset();
+            this.pnlButtons.Refresh();
         }
     }
 }

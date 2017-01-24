@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -184,6 +185,15 @@ public static class UIExtensions
         {
             action();
         }
+    }
+
+    public static void DoubleBuffered(this DataGridView dgv, bool setting)
+    {
+        //http://stackoverflow.com/questions/4255148/how-to-improve-painting-performance-of-datagridview
+        Type dgvType = dgv.GetType();
+        PropertyInfo pi = dgvType.GetProperty("DoubleBuffered",
+              BindingFlags.Instance | BindingFlags.NonPublic);
+        pi.SetValue(dgv, setting, null);
     }
 
 }

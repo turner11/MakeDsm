@@ -61,7 +61,7 @@ namespace MakeDsm
             try
             {
                 this.GridView.SuspendParentDrawing();
-                this.GridView.SuspendLayout();//in order to avoid cell formatting when itterating rows
+                this.GridView.SuspendLayout();
 
                 this.PrePaintingItems?.Invoke(this, EventArgs.Empty);
 
@@ -81,7 +81,7 @@ namespace MakeDsm
             }
             finally
             {
-                this.GridView.ResumeLayout(false);
+                this.GridView.ResumeLayout(true);
                 this.GridView.ResumeParentDrawing(true);
             }
         }
