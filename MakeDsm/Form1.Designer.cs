@@ -38,12 +38,12 @@
             this.tlpModularity = new System.Windows.Forms.TableLayoutPanel();
             this.gvModularity = new System.Windows.Forms.DataGridView();
             this.pnlButtons = new System.Windows.Forms.Panel();
+            this.lblIdx = new System.Windows.Forms.Label();
             this.btnLeft = new System.Windows.Forms.Button();
             this.btnRight = new System.Windows.Forms.Button();
             this.btnDown = new System.Windows.Forms.Button();
             this.btnUp = new System.Windows.Forms.Button();
-            this.lblIdx = new System.Windows.Forms.Label();
-            this.txbPath = new System.Windows.Forms.TextBox();
+            this.cmbPath = new System.Windows.Forms.ComboBox();
             this.btnBrows.SuspendLayout();
             this.tcDisplays.SuspendLayout();
             this.tpDSM.SuspendLayout();
@@ -60,9 +60,9 @@
             this.btnBrows.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.btnBrows.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
             this.btnBrows.Controls.Add(this.btnAnalyze, 0, 1);
-            this.btnBrows.Controls.Add(this.txbPath, 0, 0);
             this.btnBrows.Controls.Add(this.btnBrowse, 1, 0);
             this.btnBrows.Controls.Add(this.tcDisplays, 0, 3);
+            this.btnBrows.Controls.Add(this.cmbPath, 0, 0);
             this.btnBrows.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnBrows.Location = new System.Drawing.Point(0, 0);
             this.btnBrows.Name = "btnBrows";
@@ -77,7 +77,7 @@
             // btnAnalyze
             // 
             this.btnAnalyze.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btnAnalyze.Location = new System.Drawing.Point(3, 32);
+            this.btnAnalyze.Location = new System.Drawing.Point(3, 33);
             this.btnAnalyze.Name = "btnAnalyze";
             this.btnAnalyze.Size = new System.Drawing.Size(627, 23);
             this.btnAnalyze.TabIndex = 1;
@@ -100,10 +100,10 @@
             this.tcDisplays.Controls.Add(this.tpDSM);
             this.tcDisplays.Controls.Add(this.tpModularity);
             this.tcDisplays.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tcDisplays.Location = new System.Drawing.Point(3, 71);
+            this.tcDisplays.Location = new System.Drawing.Point(3, 72);
             this.tcDisplays.Name = "tcDisplays";
             this.tcDisplays.SelectedIndex = 0;
-            this.tcDisplays.Size = new System.Drawing.Size(627, 398);
+            this.tcDisplays.Size = new System.Drawing.Size(627, 397);
             this.tcDisplays.TabIndex = 4;
             this.tcDisplays.SelectedIndexChanged += new System.EventHandler(this.tcDisplays_SelectedIndexChanged);
             // 
@@ -113,7 +113,7 @@
             this.tpDSM.Location = new System.Drawing.Point(4, 25);
             this.tpDSM.Name = "tpDSM";
             this.tpDSM.Padding = new System.Windows.Forms.Padding(3);
-            this.tpDSM.Size = new System.Drawing.Size(619, 369);
+            this.tpDSM.Size = new System.Drawing.Size(619, 368);
             this.tpDSM.TabIndex = 0;
             this.tpDSM.Text = "DSM";
             this.tpDSM.UseVisualStyleBackColor = true;
@@ -131,7 +131,7 @@
             this.dsm.Location = new System.Drawing.Point(3, 3);
             this.dsm.Name = "dsm";
             this.dsm.RowTemplate.Height = 24;
-            this.dsm.Size = new System.Drawing.Size(613, 363);
+            this.dsm.Size = new System.Drawing.Size(613, 362);
             this.dsm.TabIndex = 0;
             this.dsm.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dsm_CellClick);
             this.dsm.DataBindingComplete += new System.Windows.Forms.DataGridViewBindingCompleteEventHandler(this.dsm_DataBindingComplete);
@@ -142,7 +142,7 @@
             this.tpModularity.Location = new System.Drawing.Point(4, 25);
             this.tpModularity.Name = "tpModularity";
             this.tpModularity.Padding = new System.Windows.Forms.Padding(3);
-            this.tpModularity.Size = new System.Drawing.Size(619, 369);
+            this.tpModularity.Size = new System.Drawing.Size(619, 368);
             this.tpModularity.TabIndex = 1;
             this.tpModularity.Text = "Modularity Matrix";
             this.tpModularity.UseVisualStyleBackColor = true;
@@ -159,7 +159,7 @@
             this.tlpModularity.Name = "tlpModularity";
             this.tlpModularity.RowCount = 1;
             this.tlpModularity.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tlpModularity.Size = new System.Drawing.Size(613, 363);
+            this.tlpModularity.Size = new System.Drawing.Size(613, 362);
             this.tlpModularity.TabIndex = 1;
             // 
             // gvModularity
@@ -173,7 +173,7 @@
             this.gvModularity.Location = new System.Drawing.Point(3, 3);
             this.gvModularity.Name = "gvModularity";
             this.gvModularity.RowTemplate.Height = 24;
-            this.gvModularity.Size = new System.Drawing.Size(462, 357);
+            this.gvModularity.Size = new System.Drawing.Size(462, 356);
             this.gvModularity.TabIndex = 0;
             this.gvModularity.DataBindingComplete += new System.Windows.Forms.DataGridViewBindingCompleteEventHandler(this.gvModularity_DataBindingComplete);
             // 
@@ -187,8 +187,18 @@
             this.pnlButtons.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pnlButtons.Location = new System.Drawing.Point(471, 3);
             this.pnlButtons.Name = "pnlButtons";
-            this.pnlButtons.Size = new System.Drawing.Size(139, 357);
+            this.pnlButtons.Size = new System.Drawing.Size(139, 356);
             this.pnlButtons.TabIndex = 1;
+            // 
+            // lblIdx
+            // 
+            this.lblIdx.Anchor = System.Windows.Forms.AnchorStyles.Top;
+            this.lblIdx.AutoSize = true;
+            this.lblIdx.Location = new System.Drawing.Point(49, 200);
+            this.lblIdx.Name = "lblIdx";
+            this.lblIdx.Size = new System.Drawing.Size(41, 17);
+            this.lblIdx.TabIndex = 7;
+            this.lblIdx.Text = "Index";
             // 
             // btnLeft
             // 
@@ -234,23 +244,15 @@
             this.btnUp.UseVisualStyleBackColor = true;
             this.btnUp.Click += new System.EventHandler(this.btnUp_Click);
             // 
-            // lblIdx
+            // cmbPath
             // 
-            this.lblIdx.Anchor = System.Windows.Forms.AnchorStyles.Top;
-            this.lblIdx.AutoSize = true;
-            this.lblIdx.Location = new System.Drawing.Point(49, 200);
-            this.lblIdx.Name = "lblIdx";
-            this.lblIdx.Size = new System.Drawing.Size(41, 17);
-            this.lblIdx.TabIndex = 7;
-            this.lblIdx.Text = "Index";
-            // 
-            // txbPath
-            // 
-            this.txbPath.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.txbPath.Location = new System.Drawing.Point(3, 3);
-            this.txbPath.Name = "txbPath";
-            this.txbPath.Size = new System.Drawing.Size(627, 22);
-            this.txbPath.TabIndex = 2;
+            this.cmbPath.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.cmbPath.FormattingEnabled = true;
+            this.cmbPath.Location = new System.Drawing.Point(3, 3);
+            this.cmbPath.Name = "cmbPath";
+            this.cmbPath.Size = new System.Drawing.Size(627, 24);
+            this.cmbPath.TabIndex = 5;
+            this.cmbPath.SelectedValueChanged += new System.EventHandler(this.cmbPath_SelectedValueChanged);
             // 
             // Form1
             // 
@@ -262,7 +264,6 @@
             this.Name = "Form1";
             this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             this.btnBrows.ResumeLayout(false);
-            this.btnBrows.PerformLayout();
             this.tcDisplays.ResumeLayout(false);
             this.tpDSM.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.dsm)).EndInit();
@@ -292,7 +293,7 @@
         private System.Windows.Forms.Button btnDown;
         private System.Windows.Forms.Button btnUp;
         private System.Windows.Forms.Label lblIdx;
-        private System.Windows.Forms.TextBox txbPath;
+        private System.Windows.Forms.ComboBox cmbPath;
     }
 }
 

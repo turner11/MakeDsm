@@ -25,10 +25,9 @@ namespace MakeDsm.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string Paths {
+        public string[] Paths {
             get {
-                return ((string)(this["Paths"]));
+                return ((string[])(this["Paths"]));
             }
             set {
                 this["Paths"] = value;

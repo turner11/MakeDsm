@@ -21,13 +21,20 @@ namespace MakeDsm
         {
             get
             {
-                return Properties.Settings.Default?.Path ?? "";
+                var strPathes = Properties.Settings.Default?.Paths.Split(',')?.FirstOrDefault() ?? "";
+                return strPathes;
             }
             set
             {
-                Properties.Settings.Default.Path = value;
+                var AllPathes = Properties.Settings.Default?.Paths.Split(',').ToList();
+                AllPathes.Insert(0, value);
+                AllPathes = AllPathes.Where(p=> !string.IsNullOrWhiteSpace(p)).Distinct().Take(5).ToList();
+
+                Properties.Settings.Default.Paths = string.Join(",", AllPathes);
                 Properties.Settings.Default.Save();
-                this.txbPath.Text = value;
+                this.cmbPath.Items.Clear();
+                this.cmbPath.Items.AddRange(AllPathes.Cast<object>().ToArray());
+                this.cmbPath.Text = value;
             }
         }
 
@@ -68,7 +75,7 @@ namespace MakeDsm
         public Form1()
         {
             InitializeComponent();
-            this.txbPath.Text = this.Path;
+            this.cmbPath.Text = this.Path;
             this._DSM_VM = null;
 
 
@@ -198,10 +205,10 @@ namespace MakeDsm
             if (gv == null)
                 return;
 
-            gv.AutoResizeRowHeadersWidth(DataGridViewRowHeadersWidthSizeMode.AutoSizeToAllHeaders);
 
             foreach (DataGridViewColumn col in gv.Columns)
                 col.SortMode = DataGridViewColumnSortMode.NotSortable;
+            gv.AutoResizeRowHeadersWidth(DataGridViewRowHeadersWidthSizeMode.AutoSizeToAllHeaders);
         }
 
         private void btnBrowse_Click(object sender, EventArgs e)
@@ -217,7 +224,8 @@ namespace MakeDsm
 
         private async void btnAnalyze_Click(object sender, EventArgs e)
         {
-            if (!File.Exists(this.Path))
+            var path = this.Path;
+            if (!File.Exists(path))
             {
                 MessageBox.Show($"File '{this.Path}' does not exist.");
                 return;
@@ -225,6 +233,7 @@ namespace MakeDsm
 
             try
             {
+                this.Path = path; // this will set this as default...
                 using (new CursorWait())
                 {
                     this.lblIdx.Text = "";
@@ -484,6 +493,18 @@ namespace MakeDsm
             }
         }
 
+        private void cmbPath_SelectedValueChanged(object sender, EventArgs e)
+        {
+            var path = this.cmbPath.SelectedItem as string;
+            if (String.IsNullOrWhiteSpace(path))
+                return;
 
+            if (this.Path != path)
+            {
+                this.Path = path;
+
+            }
+            //this.cmbPath.Text = path;
+        }
     }
 }
