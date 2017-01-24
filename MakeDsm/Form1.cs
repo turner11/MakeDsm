@@ -305,28 +305,28 @@ namespace MakeDsm
         }
         private void Gv_SelectionChanged(object sender, EventArgs e)
         {
-            var highlightColor = Color.Orange;
-            var defColor = Color.FromKnownColor(KnownColor.Control);
+            //var highlightColor = Color.Orange;
+            //var defColor = Color.FromKnownColor(KnownColor.Control);
             var gv = sender as DataGridView;
             if (gv == null)
                 return;
 
-            return;
+           
 
             gv.TopLeftHeaderCell.Value = "";
-            foreach (var row in gv.Rows.OfType<DataGridViewRow>())
-                row.HeaderCell.Style.BackColor = defColor;
+            //foreach (var row in gv.Rows.OfType<DataGridViewRow>())
+            //    row.HeaderCell.Style.BackColor = defColor;
 
-            foreach (var col in gv.Columns.OfType<DataGridViewColumn>())
-                col.HeaderCell.Style.BackColor = defColor;
+            //foreach (var col in gv.Columns.OfType<DataGridViewColumn>())
+            //    col.HeaderCell.Style.BackColor = defColor;
 
             var selectedRow = gv.SelectedCells.OfType<DataGridViewCell>().Select(c => c.OwningRow).Distinct().FirstOrDefault();
             if (selectedRow != null)
             {
 
                 var rowHeader = selectedRow.HeaderCell;
-                rowHeader.Style.BackColor = highlightColor;
-                rowHeader.Style.SelectionBackColor = highlightColor;
+                //rowHeader.Style.BackColor = highlightColor;
+                //rowHeader.Style.SelectionBackColor = highlightColor;
 
                 var headerText = selectedRow.HeaderCell.Value + "\n\n";
 
@@ -335,7 +335,7 @@ namespace MakeDsm
                 var markedColumns = markedCels.Select(c => c.OwningColumn).Where(col => col.Visible);
                 foreach (var clm in markedColumns)
                 {
-                    clm.HeaderCell.Style.BackColor = highlightColor;
+                    //clm.HeaderCell.Style.BackColor = highlightColor;
                     headerText += clm.HeaderText + "\n";
 
                 }
