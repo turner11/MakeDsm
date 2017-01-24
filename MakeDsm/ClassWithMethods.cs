@@ -20,11 +20,13 @@ namespace MakeDsm
         public ReadOnlyCollection<PropertyDeclarationSyntax> PublicProperties { get { return this._properties.Where(m=> _isModifiersHasPublic(m.Modifiers)).ToList().AsReadOnly(); } }
 
         Predicate<SyntaxTokenList> _isModifiersHasPublic = (mod) => mod.Any(m => m.Text == PUBLIC_TOKEN_TEXT);
+        private static readonly ReadOnlyCollection<string> _objectMethods;
 
         static ClassWithMethods()
         {
             var publicModifier = SyntaxFactory.Token(SyntaxKind.PublicKeyword);
             PUBLIC_TOKEN_TEXT = publicModifier.Text;/*public*/
+            _objectMethods = GetObjectMethods().ToList().AsReadOnly();
         }
         public ClassWithMethods(ClassDeclarationSyntax @class, List<MemberDeclarationSyntax> methodsAndProperties)
             :base(@class)
@@ -40,11 +42,19 @@ namespace MakeDsm
             var pNames = this.PublicProperties.Select(p => p.Identifier.ValueText);
             //pNames = new List<string>(); //checking if would be better with no properties
 
-            var ret = mNames.Union(pNames).Distinct().ToList(); 
+            var ret = mNames.Union(pNames).Where(n=> !_objectMethods.Contains(n)).Distinct().ToList(); 
             return ret;
         }
 
         
+         
+        private static IList<string> GetObjectMethods()
+        {
+            var names = typeof(object).GetMethods(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance).Select(m => m.Name).ToList();
+            return names;
+        }
+
+
 
     }
 }

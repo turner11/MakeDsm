@@ -10,7 +10,7 @@ using System.Collections.ObjectModel;
 
 namespace MakeDsm
 {
-    abstract class DependencyHighlighter<TModel,TView>
+    abstract class DependencyHighlighter<TModel,TView>where TModel:class
     {
 
         static readonly Color DefaultColor = Color.White;
@@ -19,7 +19,7 @@ namespace MakeDsm
         public DataGridView GridView { get; }
         private int _idx;
         private readonly List<KeyValuePair<TModel, ReadOnlyCollection<TModel>>> _allItems;
-
+        public int ItemCount { get { return this._allItems.Count; } }
         protected event EventHandler PrePaintingItems;
 
         public int Idx
@@ -42,7 +42,9 @@ namespace MakeDsm
                     _idx = -1;
                 }
             }
-        }     
+        }
+
+     
 
         public void Next() => this.Idx++;
 
@@ -54,7 +56,10 @@ namespace MakeDsm
             this.DependencyLocator = dependencyLocator;
             this._allItems = this.DependencyLocator?.LinearDependedRows?.OrderBy(p=> p.Value.Count)?.ToList() ?? new List<KeyValuePair<TModel, ReadOnlyCollection<TModel>>>();
             this.Idx = 0;
+         
         }
+
+       
 
         private void PaintItems(TModel mainItem, IList<TModel> items ,Color color)
         {
@@ -89,11 +94,36 @@ namespace MakeDsm
         protected abstract void PaintItem(TView item, Color color);
 
         protected abstract TView GetView(TModel model);
+         protected abstract TModel GetItemFromSelectedCell(DataGridViewCell cell);
 
         public void Reset()
         {
             var allItems = _allItems.SelectMany(p => p.Value).ToList();
             this.PaintItems(default(TModel), allItems, DefaultColor);
         }
+
+
+        internal void HighlightDependencies(DataGridViewCell cell)
+        {
+            if (cell == null)
+            {
+                return;
+            }
+            TModel model = this.GetItemFromSelectedCell(cell);
+            if (model != null)
+            {
+                var pair = this._allItems.FirstOrDefault(p => p.Key.Equals(model));
+                if (model.Equals(pair.Key))
+                {
+                    var idxOfPair = this._allItems.IndexOf(pair);
+                    if (idxOfPair >= 0)
+                    {
+                        this.Idx = idxOfPair;
+                    }
+                }
+            }
+        }
+
+
     }
 }

@@ -14,6 +14,7 @@ namespace MakeDsm
 {
     internal class RoslynReferences : IDenpendencies
     {
+
         public ClassessWithMethods ClassessWithMethods { get; }
 
         public IReadOnlyCollection<RoslynDenpendency> ClassessWithReferences { get; }
@@ -23,6 +24,7 @@ namespace MakeDsm
         public RoslynReferences(IList<RoslynDenpendency> dependencies, ClassessWithMethods classesWithMethods)
         {
             this.ClassessWithReferences = dependencies.ToList().AsReadOnly();
+           
             this.ClassessWithMethods = classesWithMethods;
 
 
@@ -38,7 +40,7 @@ namespace MakeDsm
             Debug.WriteLine(s);
 #endif
         }
-
+        
         private string GetFullString()
         {
             var lines = DependencyDictionary.OrderByDescending(p=> p.Value.Count).Select(p => $"{p.Key}: \t\t\t"+String.Join(",\t",p.Value));

@@ -30,5 +30,14 @@ namespace MakeDsm
             row.DefaultCellStyle = row.DefaultCellStyle  ?? new DataGridViewCellStyle(this.GridView.DefaultCellStyle);
             row.DefaultCellStyle.BackColor = color;
         }
+
+        protected override DataRow GetItemFromSelectedCell(DataGridViewCell cell)
+        {
+            var gvRow = cell.OwningRow;
+            var row = (gvRow.DataBoundItem as DataRowView)?.Row;
+            return row;
+
+            
+        }
     }
 }

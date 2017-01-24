@@ -43,6 +43,7 @@
             this.btnRight = new System.Windows.Forms.Button();
             this.btnDown = new System.Windows.Forms.Button();
             this.btnUp = new System.Windows.Forms.Button();
+            this.lblIdx = new System.Windows.Forms.Label();
             this.btnBrows.SuspendLayout();
             this.tcDisplays.SuspendLayout();
             this.tpDSM.SuspendLayout();
@@ -186,6 +187,7 @@
             // 
             // pnlButtons
             // 
+            this.pnlButtons.Controls.Add(this.lblIdx);
             this.pnlButtons.Controls.Add(this.btnLeft);
             this.pnlButtons.Controls.Add(this.btnRight);
             this.pnlButtons.Controls.Add(this.btnDown);
@@ -240,6 +242,16 @@
             this.btnUp.UseVisualStyleBackColor = true;
             this.btnUp.Click += new System.EventHandler(this.btnUp_Click);
             // 
+            // lblIdx
+            // 
+            this.lblIdx.Anchor = System.Windows.Forms.AnchorStyles.Top;
+            this.lblIdx.AutoSize = true;
+            this.lblIdx.Location = new System.Drawing.Point(49, 200);
+            this.lblIdx.Name = "lblIdx";
+            this.lblIdx.Size = new System.Drawing.Size(41, 17);
+            this.lblIdx.TabIndex = 7;
+            this.lblIdx.Text = "Index";
+            // 
             // Form1
             // 
             this.AcceptButton = this.btnAnalyze;
@@ -258,6 +270,7 @@
             this.tlpModularity.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.gvModularity)).EndInit();
             this.pnlButtons.ResumeLayout(false);
+            this.pnlButtons.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -279,6 +292,7 @@
         private System.Windows.Forms.Button btnRight;
         private System.Windows.Forms.Button btnDown;
         private System.Windows.Forms.Button btnUp;
+        private System.Windows.Forms.Label lblIdx;
     }
 }
 

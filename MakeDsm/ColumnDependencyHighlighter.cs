@@ -27,16 +27,17 @@ namespace MakeDsm
 
             //var ds = this.GridView.DataSource;
             //this.GridView.DataSource = null;
-            //this.GridView.DataSource = ds;
+            //this.GridView.DataSource = ds;          
 
             var idx = this.GridView.FirstDisplayedScrollingRowIndex;
             DataTable dt = this.GridView.DataSource as DataTable;
             if (dt != null)
             {
-
                 dt.AcceptChanges();
                 this.GridView.FirstDisplayedScrollingRowIndex = idx;
             }
+            this.GridView.AutoResizeRowHeadersWidth(DataGridViewRowHeadersWidthSizeMode.AutoSizeToAllHeaders);
+          
         }
 
         protected override DataGridViewColumn GetView(DataColumn dataColumn)
@@ -53,5 +54,18 @@ namespace MakeDsm
         {
             column.DefaultCellStyle.BackColor = color;
         }
+
+        protected override DataColumn GetItemFromSelectedCell(DataGridViewCell cell)
+        {
+            var gvCol = cell.OwningColumn;
+            DataTable dt = this.GridView.DataSource as DataTable;
+            
+            return dt?.Columns?.OfType<DataColumn>()?.FirstOrDefault(clm => clm.ColumnName == gvCol.Name);
+            
+        }
+
+       
+
+
     }
 }

@@ -15,7 +15,7 @@ namespace MakeDsm
     public partial class Form1 : Form
     {
 
-        
+
         event EventHandler ModularityVM_Changed;
         string Path
         {
@@ -35,17 +35,21 @@ namespace MakeDsm
         DSM_VM _DSM_VM
         {
             get { return this._dsm_vm; }
-            set { this._dsm_vm = value;
+            set
+            {
+                this._dsm_vm = value;
                 this.dsm.DataSource = this._dsm_vm?.DSM;
                 this.ModularityMatrix_VM = this._DSM_VM?.GetModularityMatrix();
-                
-                
+
+
             }
         }
 
         ModularityMatrixVM _modularityVM;
         private RowDependencyHighlighter _rowLinearDependencyHighLighter;
         private ColumnDependencyHighlighter _colLinearDependencyHighliter;
+
+        bool isLastHighlighterCol;
 
         ModularityMatrixVM ModularityMatrix_VM
         {
@@ -54,10 +58,11 @@ namespace MakeDsm
             {
                 this._modularityVM = value;
                 this.gvModularity.DataSource = this._modularityVM?.ModularityMatrix;
-                this.ModularityVM_Changed?.Invoke(this,EventArgs.Empty);
-                
+                this.ModularityVM_Changed?.Invoke(this, EventArgs.Empty);
+
             }
         }
+
 
 
         public Form1()
@@ -70,12 +75,16 @@ namespace MakeDsm
             this.ModularityVM_Changed += Form1_ModularityVM_Changed;
             this.SetGridViewsStyle();
 
-            this.dsm.DataBindingComplete += (s,e) => this.FillRowHeader(this.dsm, DSM_VM.COL_NAME);
-            this.gvModularity.DataBindingComplete += (s,e) => this.FillRowHeader(this.gvModularity, ModularityMatrixVM.COL_METHOD_NAME);
+            this.dsm.DataBindingComplete += (s, e) => this.FillRowHeader(this.dsm, DSM_VM.COL_NAME);
+            this.gvModularity.DataBindingComplete += (s, e) => this.FillRowHeader(this.gvModularity, ModularityMatrixVM.COL_METHOD_NAME);
             this.pnlButtons.Invalidated += PnlButtons_Invalidated;
-
+            this.lblIdx.Text = "";
+            this.gvModularity.CellClick += GvModularity_CellClick; 
+;
 
         }
+
+      
 
         private void PnlButtons_Invalidated(object sender, InvalidateEventArgs e)
         {
@@ -93,7 +102,7 @@ namespace MakeDsm
             }
         }
 
-       
+
 
         private async void Form1_ModularityVM_Changed(object sender, EventArgs e)
         {
@@ -133,7 +142,7 @@ namespace MakeDsm
                 {
 
                     this.SetDependencyControlEnableState(false);
-                    MessageBox.Show("An error occurred while getting dependencies.\n"+ex.ToString());
+                    MessageBox.Show("An error occurred while getting dependencies.\n" + ex.ToString());
                 }
 
             }
@@ -163,8 +172,8 @@ namespace MakeDsm
 
         private void SetGridViewsStyle()
         {
-            
-            var gvs = new List<DataGridView> {this.dsm, this.gvModularity };
+
+            var gvs = new List<DataGridView> { this.dsm, this.gvModularity };
             foreach (var gv in gvs)
             {
                 gv.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.EnableResizing;
@@ -175,12 +184,12 @@ namespace MakeDsm
                 gv.CellPainting += new DataGridViewCellPaintingEventHandler(this.gv_CellPainting);
                 gv.DataBindingComplete += this.gv_DataBindingComplete;
 
-              
+
                 gv.SelectionChanged += Gv_SelectionChanged;
                 gv.DoubleBuffered(true);
             }
 
-          
+
         }
 
         private void gv_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
@@ -218,24 +227,26 @@ namespace MakeDsm
             {
                 using (new CursorWait())
                 {
+                    this.lblIdx.Text = "";
                     this.btnAnalyze.Enabled = false;
                     this._DSM_VM = null;
-                    
+
                     IDenpendencies result = null;
-                    await Task.Run(()=> result = MakeDsmService.GetDependencies(this.Path));
+                    await Task.Run(() => result = MakeDsmService.GetDependencies(this.Path));
                     IReadOnlyDictionary<string, List<string>> dependenciesByModule = result.DependencyDictionary;
 
                     var vm = new DSM_VM(result);
                     this._DSM_VM = vm;
-                    
-                    
+
+
                 }
 
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"An error occured:\n{ex.Message}");
-            }finally
+            }
+            finally
             {
                 this.btnAnalyze.Enabled = true;
 
@@ -248,18 +259,18 @@ namespace MakeDsm
         {
             this.dsm.Columns[DSM_VM.COL_NAME].Visible = false;
             this.dsm.Columns[DSM_VM.COL_SORT].Visible = false;
-            
+
         }
         private void gvModularity_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
         {
             this.gvModularity.Columns[ModularityMatrixVM.COL_METHOD_NAME].Visible = false;
             this.gvModularity.Columns[ModularityMatrixVM.COL_SORT_VALUE].Visible = false;
-            
+
         }
 
         private void FillRowHeader(DataGridView gv, string rowHeaderColName)
         {
-            
+
             for (int i = 0; i < gv.Rows.Count; i++)
             {
                 var header = gv.Rows[i].Cells[rowHeaderColName].Value;
@@ -272,7 +283,7 @@ namespace MakeDsm
             var gv = sender as DataGridView;
             if (gv == null)
                 return;
-            if (e.ColumnIndex < 0 ||  e.RowIndex < 0)
+            if (e.ColumnIndex < 0 || e.RowIndex < 0)
                 return;
 
             var objVal = gv.Rows[e.RowIndex].Cells[e.ColumnIndex].Value ?? "";
@@ -291,6 +302,8 @@ namespace MakeDsm
             if (gv == null)
                 return;
 
+            return;
+
             gv.TopLeftHeaderCell.Value = "";
             foreach (var row in gv.Rows.OfType<DataGridViewRow>())
                 row.HeaderCell.Style.BackColor = defColor;
@@ -301,7 +314,7 @@ namespace MakeDsm
             var selectedRow = gv.SelectedCells.OfType<DataGridViewCell>().Select(c => c.OwningRow).Distinct().FirstOrDefault();
             if (selectedRow != null)
             {
-                
+
                 var rowHeader = selectedRow.HeaderCell;
                 rowHeader.Style.BackColor = highlightColor;
                 rowHeader.Style.SelectionBackColor = highlightColor;
@@ -310,7 +323,7 @@ namespace MakeDsm
 
                 var markedCels = selectedRow.Cells.OfType<DataGridViewCell>()
                                     .Where(c => !String.IsNullOrWhiteSpace((c.Value ?? "").ToString())).ToList();
-                var markedColumns = markedCels.Select(c => c.OwningColumn).Where(col=> col.Visible);
+                var markedColumns = markedCels.Select(c => c.OwningColumn).Where(col => col.Visible);
                 foreach (var clm in markedColumns)
                 {
                     clm.HeaderCell.Style.BackColor = highlightColor;
@@ -351,9 +364,9 @@ namespace MakeDsm
                 // maximum of all the columns since we paint cells twice - though this fact
                 // may not be true in all usages!   
 
-                
+
                 e.Graphics.DrawString(e.Value.ToString(), this.Font, Brushes.Black, new PointF(rect.Y - (gv.ColumnHeadersHeight - titleSize.Width), rect.X));
-               // e.Graphics.DrawString(e.Value.ToString(), this.Font, Brushes.Black, new PointF(rect.Y - (h - titleSize.Width), rect.X));
+                // e.Graphics.DrawString(e.Value.ToString(), this.Font, Brushes.Black, new PointF(rect.Y - (h - titleSize.Width), rect.X));
 
                 // The old line for comparison
                 //e.Graphics.DrawString(e.Value.ToString(), this.Font, Brushes.Black, new PointF(rect.Y, rect.X));
@@ -365,18 +378,18 @@ namespace MakeDsm
             }
         }
 
-      
+
         private void dsm_CellClick(object sender, DataGridViewCellEventArgs e)
         {
-           
+
             if (e.RowIndex < 0)
                 return;
-            
+
             string className = this.dsm.Rows[e.RowIndex].Cells[DSM_VM.COL_NAME].Value as string;
             if (String.IsNullOrWhiteSpace(className))
                 return;
 
-          
+
         }
 
         private void tcDisplays_SelectedIndexChanged(object sender, EventArgs e)
@@ -386,20 +399,31 @@ namespace MakeDsm
                 //this.ModularityMatrix_VM = this._dsm_vm?.GetModularityMatrix();
             }
         }
+        private void SetIndexText<TModel, TView>(DependencyHighlighter<TModel, TView> dependencyHighLighter) where TModel : class
+        {
+            this.lblIdx.Text = $"{dependencyHighLighter.Idx +1} / {dependencyHighLighter.ItemCount}";
+        } 
 
         private void btnDown_Click(object sender, EventArgs e)
         {
             this.ResetHighlighters();
             this._rowLinearDependencyHighLighter?.Next();
+            this.SetIndexText(this._rowLinearDependencyHighLighter);
             this.pnlButtons.Refresh();
+            this.isLastHighlighterCol = false;
 
         }
+
+
 
         private void btnUp_Click(object sender, EventArgs e)
         {
             this.ResetHighlighters();
             this._rowLinearDependencyHighLighter?.Previous();
+            this.SetIndexText(this._rowLinearDependencyHighLighter);
             this.pnlButtons.Refresh();
+            this.isLastHighlighterCol = false;
+
 
         }
 
@@ -407,6 +431,8 @@ namespace MakeDsm
         {
             this.ResetHighlighters();
             this._colLinearDependencyHighliter?.Next();
+            this.SetIndexText(this._colLinearDependencyHighliter);
+            this.isLastHighlighterCol = true;
             this.pnlButtons.Refresh();
         }
 
@@ -414,7 +440,9 @@ namespace MakeDsm
         {
             this.ResetHighlighters();
             this._colLinearDependencyHighliter?.Previous();
+            this.SetIndexText(this._colLinearDependencyHighliter);
             this.pnlButtons.Refresh();
+            this.isLastHighlighterCol = true;
         }
 
         private void ResetHighlighters()
@@ -422,6 +450,37 @@ namespace MakeDsm
             this._colLinearDependencyHighliter?.Reset();
             this._rowLinearDependencyHighLighter?.Reset();
             this.pnlButtons.Refresh();
+         
         }
+        
+            
+        private void GvModularity_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+          
+            if (this.gvModularity.SelectedCells.Count == 1)
+            {
+                try
+                {
+                    //this.gvModularity.CellClick -= GvModularity_CellClick;
+
+                    this.ResetHighlighters();
+                    var cell = this.gvModularity[e.ColumnIndex, e.RowIndex];
+                    if (this.isLastHighlighterCol)
+                        this._colLinearDependencyHighliter?.HighlightDependencies(cell);
+                    else
+                        this._rowLinearDependencyHighLighter?.HighlightDependencies(cell);
+
+
+                }
+                finally
+                {
+                    //this.gvModularity.CellClick += GvModularity_CellClick;
+                }
+
+
+            }
+        }
+
+
     }
 }
