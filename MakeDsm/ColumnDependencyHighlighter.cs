@@ -34,7 +34,11 @@ namespace MakeDsm
             if (dt != null)
             {
                 dt.AcceptChanges();
+                if (idx >=0)
+                {
                 this.GridView.FirstDisplayedScrollingRowIndex = idx;
+
+                }
             }
             this.GridView.AutoResizeRowHeadersWidth(DataGridViewRowHeadersWidthSizeMode.AutoSizeToAllHeaders);
           

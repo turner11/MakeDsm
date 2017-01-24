@@ -457,7 +457,10 @@ namespace MakeDsm
         private void GvModularity_CellClick(object sender, DataGridViewCellEventArgs e)
         {
           
-            if (this.gvModularity.SelectedCells.Count == 1)
+            if (e.ColumnIndex <= this.gvModularity.ColumnCount 
+                &&  e.RowIndex <= this.gvModularity.RowCount 
+                && e.ColumnIndex >=0
+                &&  e.RowIndex >= 0)
             {
                 try
                 {

@@ -30,7 +30,6 @@
         {
             this.btnBrows = new System.Windows.Forms.TableLayoutPanel();
             this.btnAnalyze = new System.Windows.Forms.Button();
-            this.txbPath = new System.Windows.Forms.TextBox();
             this.btnBrowse = new System.Windows.Forms.Button();
             this.tcDisplays = new System.Windows.Forms.TabControl();
             this.tpDSM = new System.Windows.Forms.TabPage();
@@ -44,6 +43,7 @@
             this.btnDown = new System.Windows.Forms.Button();
             this.btnUp = new System.Windows.Forms.Button();
             this.lblIdx = new System.Windows.Forms.Label();
+            this.txbPath = new System.Windows.Forms.TextBox();
             this.btnBrows.SuspendLayout();
             this.tcDisplays.SuspendLayout();
             this.tpDSM.SuspendLayout();
@@ -84,14 +84,6 @@
             this.btnAnalyze.Text = "Analyze";
             this.btnAnalyze.UseVisualStyleBackColor = true;
             this.btnAnalyze.Click += new System.EventHandler(this.btnAnalyze_Click);
-            // 
-            // txbPath
-            // 
-            this.txbPath.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.txbPath.Location = new System.Drawing.Point(3, 3);
-            this.txbPath.Name = "txbPath";
-            this.txbPath.Size = new System.Drawing.Size(627, 22);
-            this.txbPath.TabIndex = 2;
             // 
             // btnBrowse
             // 
@@ -252,6 +244,14 @@
             this.lblIdx.TabIndex = 7;
             this.lblIdx.Text = "Index";
             // 
+            // txbPath
+            // 
+            this.txbPath.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.txbPath.Location = new System.Drawing.Point(3, 3);
+            this.txbPath.Name = "txbPath";
+            this.txbPath.Size = new System.Drawing.Size(627, 22);
+            this.txbPath.TabIndex = 2;
+            // 
             // Form1
             // 
             this.AcceptButton = this.btnAnalyze;
@@ -280,7 +280,6 @@
         private System.Windows.Forms.TableLayoutPanel btnBrows;
         private System.Windows.Forms.DataGridView dsm;
         private System.Windows.Forms.Button btnAnalyze;
-        private System.Windows.Forms.TextBox txbPath;
         private System.Windows.Forms.Button btnBrowse;
         private System.Windows.Forms.TabControl tcDisplays;
         private System.Windows.Forms.TabPage tpDSM;
@@ -293,6 +292,7 @@
         private System.Windows.Forms.Button btnDown;
         private System.Windows.Forms.Button btnUp;
         private System.Windows.Forms.Label lblIdx;
+        private System.Windows.Forms.TextBox txbPath;
     }
 }
 
