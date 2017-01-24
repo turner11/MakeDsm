@@ -21,20 +21,20 @@ namespace MakeDsm
 #if PRINT_DETAILS
                 Debug.WriteLine($"@@@@@@ '{this.Name }' (X{this.References.Count}) \n Apperas in:\n" + String.Join("\n", this.References.Select(v => v.Definition.ContainingType).Distinct()));
 #endif
-            foreach (var r in this.References)
-            {
-                var s = r.Definition.ContainingType;
+            //foreach (var r in this.References)
+            //{
+            //    var s = r.Definition.ContainingType;
 
-                foreach (var l in r.Locations)
-                {
+            //    foreach (var l in r.Locations)
+            //    {
 
-                    var t = l.Location.SourceTree;
-                    var loc = t.ToString();
-                    var a = t.GetRoot().DescendantNodesAndSelf().OfType<ClassDeclarationSyntax>().LastOrDefault();
-                    var at = a?.ToString();
-                    //l.Location.SourceSpan.ToString();
-                }
-            }
+            //        var t = l.Location.SourceTree;
+            //        var loc = t.ToString();
+            //        var a = t.GetRoot().DescendantNodesAndSelf().OfType<ClassDeclarationSyntax>().LastOrDefault();
+            //        var at = a?.ToString();
+            //        //l.Location.SourceSpan.ToString();
+            //    }
+            //}
         }
 
 

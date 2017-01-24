@@ -159,7 +159,7 @@ namespace MakeDsm
 
               
                 gv.SelectionChanged += Gv_SelectionChanged;
-
+                
             }
 
           
@@ -170,6 +170,9 @@ namespace MakeDsm
             var gv = sender as DataGridView;
             if (gv == null)
                 return;
+
+            gv.AutoResizeRowHeadersWidth(DataGridViewRowHeadersWidthSizeMode.AutoSizeToAllHeaders);
+
             foreach (DataGridViewColumn col in gv.Columns)
                 col.SortMode = DataGridViewColumnSortMode.NotSortable;
         }
@@ -312,9 +315,14 @@ namespace MakeDsm
                 e.PaintBackground(e.ClipBounds, true);
                 Rectangle rect = gv.GetColumnDisplayRectangle(e.ColumnIndex, true);
                 Size titleSize = TextRenderer.MeasureText(e.Value.ToString(), e.CellStyle.Font);
+
+                var maxHiegt = 200;
+                var h = Math.Min(titleSize.Width, maxHiegt);
+
                 if (gv.ColumnHeadersHeight < titleSize.Width)
                 {
                     gv.ColumnHeadersHeight = titleSize.Width;
+                    gv.ColumnHeadersHeight = h;
                 }
 
                 e.Graphics.TranslateTransform(0, titleSize.Width);
@@ -324,7 +332,10 @@ namespace MakeDsm
                 // ColumnHeadersHeight minus the current text width. ColumnHeadersHeight is the
                 // maximum of all the columns since we paint cells twice - though this fact
                 // may not be true in all usages!   
+
+                
                 e.Graphics.DrawString(e.Value.ToString(), this.Font, Brushes.Black, new PointF(rect.Y - (gv.ColumnHeadersHeight - titleSize.Width), rect.X));
+               // e.Graphics.DrawString(e.Value.ToString(), this.Font, Brushes.Black, new PointF(rect.Y - (h - titleSize.Width), rect.X));
 
                 // The old line for comparison
                 //e.Graphics.DrawString(e.Value.ToString(), this.Font, Brushes.Black, new PointF(rect.Y, rect.X));

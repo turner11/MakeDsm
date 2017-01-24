@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -61,27 +62,117 @@ public static class Extensions
 
     }
 
-    public static IOrderedEnumerable<IEnumerable<T>> GetOrederedPowerSet<T>(this IList<T> list)
+    public static IOrderedEnumerable<List<T>> GetOrederedPowerSet<T>(this IList<T> list)
     {
         return GetPowerSet(list).OrderBy(en => en.Count());
     }
 
-    public static IEnumerable<IEnumerable<T>> GetPowerSet<T>(this IList<T> list, int limitGroupSize = int.MaxValue)
+    //public static IEnumerable<IEnumerable<T>> GetPowerSet<T>(this IList<T> list, int limitGroupSize = int.MaxValue)
+    public static IEnumerable<List<T>> GetPowerSet<T>(this IList<T> list, int limitGroupSize = int.MaxValue)
     {
-      
-         return from m in Enumerable.Range(0, 1 << list.Count)
-               select
-                   from i in Enumerable.Range(0, list.Count)
-                   where (m & (1 << i)) != 0
-                   select list[i];
-         
+
+        //return from m in Enumerable.Range(0, 1 << list.Count)
+        //      select
+        //          from i in Enumerable.Range(0, list.Count)
+        //          where (m & (1 << i)) != 0
+        //          select list[i];
+
+        List<List<T>> subsetList = new List<List<T>>();
+
+        //The set bits of each intermediate value represent unique 
+        //combinations from the startingSet.
+        //We can start checking for combinations at (1<<minSubsetSize)-1 since
+        //values less than that will not yield large enough subsets.
+
+        var affectiveMaxLength = Math.Min(list.Count, limitGroupSize);
+        long iLimitTemp = Convert.ToInt64(Math.Pow(2, list.Count));
+        int iLimit = iLimitTemp > int.MaxValue ? int.MaxValue : Convert.ToInt32(iLimitTemp);
+        var numbers = Enumerable.Range(1, iLimit).Where(num => NumberOfSetBits(num) <= limitGroupSize).ToList();
+        for (int i = 0; i < numbers.Count; i++)
+        {
+            int setBitCount = NumberOfSetBits(i);
+            List<T> subset = new List<T>(setBitCount);
+
+            for (int j = 0; j < list.Count; j++)
+            {
+                //If the j'th bit in i is set, 
+                //then add the j'th element of the startingSet to this subset.
+                if ((i & (1 << j)) != 0)
+                {
+                    subset.Add(list[j]);
+                }
+            }
+            yield return subset;
+
+        }
+
+
+        //for (int i = 1; i < iLimit; i++)
+        //{
+        //    //Get the number of 1's in this 'i'
+        //    int setBitCount = NumberOfSetBits(i);
+
+        //    //Only include this subset if it will have at least minSubsetSize members.
+        //    if (setBitCount <= limitGroupSize)
+        //    {
+        //        List<T> subset = new List<T>(setBitCount);
+
+        //        for (int j = 0; j < list.Count; j++)
+        //        {
+        //            //If the j'th bit in i is set, 
+        //            //then add the j'th element of the startingSet to this subset.
+        //            if ((i & (1 << j)) != 0)
+        //            {
+        //                subset.Add(list[j]);
+        //            }
+        //        }
+        //       yield return subset;
+        //    }
+        //}
+
     }
 
-
+    static int NumberOfSetBits(int i)
+    {
+        i = i - ((i >> 1) & 0x55555555);
+        i = (i & 0x33333333) + ((i >> 2) & 0x33333333);
+        return (((i + (i >> 4)) & 0x0F0F0F0F) * 0x01010101) >> 24;
+    }
 }
 
 public static class UIExtensions
 {
+    [DllImport("user32.dll")]
+    public static extern int SendMessage(IntPtr hWnd, Int32 wMsg, bool wParam, Int32 lParam);
+
+    private const int WM_SETREDRAW = 11;
+
+    public static void SuspendParentDrawing(this Control contol)
+    {
+        contol?.Parent?.SuspendDrawing();
+    }
+
+    public static void ResumeParentDrawing(this Control contol, bool refresh = true)
+    {
+        contol?.Parent?.ResumeDrawing(refresh);
+    }
+
+    private static void SuspendDrawing(this Control parent)
+    {
+        SendMessage(parent.Handle, WM_SETREDRAW, false, 0);
+    }
+
+    private static void ResumeDrawing(this Control parent, bool refresh = true)
+    {
+        SendMessage(parent.Handle, WM_SETREDRAW, true, 0);
+
+        if (refresh)
+        {
+            parent.Refresh();
+
+        }
+    }
+
     public static void InvokeIfRequired(this Control obj, MethodInvoker action)
     {
         if (obj.InvokeRequired)
@@ -94,5 +185,6 @@ public static class UIExtensions
             action();
         }
     }
+
 }
 

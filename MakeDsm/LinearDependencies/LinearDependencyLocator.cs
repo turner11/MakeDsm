@@ -15,28 +15,28 @@ namespace MakeDsm.LinearDependencies
 
         public ReadOnlyCollection<T> Items { get; }
         public ReadOnlyDictionary<T, ReadOnlyCollection<T>> LinearDependedRows;
-        readonly Dictionary<T, bool[]> ItemLogicalCache;
+        Dictionary<T, bool[]> ItemLogicalCache;
 
 
 
         public LinearDependencyLocator(IList<T> ts)
         {
             this.Items = ts.ToList().AsReadOnly();
-            this.ItemLogicalCache = this.Items.ToDictionary(it => it, it => null as bool[]);
+
 
         }
 
         internal void Init()
         {
-           
-            var maxCount = this.Items.Count;//for optimization...
-            //var powerset = this.Rows.GetOrederedPowerSet().Select(s => s.ToList()).Where(s=> s.Count > 0).Reverse().ToList();
-            var powerset = this.Items.GetPowerSet().Select(s => s.ToList()).Where(s => s.Count > 0).ToList();
+            this.ItemLogicalCache = this.Items.ToDictionary(itm => itm, itm => this.ToLogicalArrayInternal(itm));
+          
+
+            //var maxCount = maxCountItem.Count(v=> v);//for optimization...
+            ////var powerset = this.Rows.GetOrederedPowerSet().Select(s => s.ToList()).Where(s=> s.Count > 0).Reverse().ToList();
+            //var powerset = this.Items.GetPowerSet(maxCount).ToList();
            
             var depDic = new ConcurrentDictionary<T, ReadOnlyCollection<T>>();
-            var setByCount = powerset.GroupBy(s=> s.Count);
-
-
+            //var setByCount = powerset.GroupBy(s=> s.Count);
             
 
             Action<T> AddDependenciesForRow = (item) =>
@@ -48,10 +48,16 @@ namespace MakeDsm.LinearDependencies
                     return;
                 }
                 var itemCount = lRow.Count(b=> b);
-                
-                var candidates = setByCount.Where(p=> p.Key <= itemCount).SelectMany(p=> p.ToList());//for performance
-                var setsWithOutRow = candidates.Where(s => !s.Contains(item)).ToList();
-                foreach (var currSet in setsWithOutRow)
+
+                var itemTruesIdxs = lRow.Select((b, i) => new { Value = b, Index = i }).Where(an => an.Value).Select(an => an.Index).ToList();
+                var candidates = this.ItemLogicalCache.Where(p=> !p.Key.Equals(item))
+                                .Where(p => itemTruesIdxs.Any(i => p.Value[i]))
+                                .Select(p=> p.Key)
+                                .ToList();// Its a candidate only if there is any intersction on "true"s
+
+                var maxCountItem = lRow.Count(v => v);
+                var powerset = candidates.GetPowerSet(maxCountItem).Where(s=> s.Count > 0).ToList();
+                foreach (var currSet in powerset)
                 {
                     
                     var lSet = currSet.Select(r => ToLogicalArray(r)).ToList();
@@ -70,6 +76,9 @@ namespace MakeDsm.LinearDependencies
             };
 
             bool goParrallel = true;
+#if DEBUG
+            goParrallel = false;
+#endif
             if (goParrallel)
             {
                 Parallel.ForEach(this.Items, row => AddDependenciesForRow(row));

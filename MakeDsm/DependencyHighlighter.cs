@@ -20,6 +20,8 @@ namespace MakeDsm
         private int _idx;
         private readonly List<KeyValuePair<TModel, ReadOnlyCollection<TModel>>> _allItems;
 
+        protected event EventHandler PrePaintingItems;
+
         public int Idx
         {
             get { return _idx; }
@@ -50,24 +52,37 @@ namespace MakeDsm
         {
             this.GridView = gv;
             this.DependencyLocator = dependencyLocator;
-            this._allItems = this.DependencyLocator.LinearDependedRows.OrderBy(p=> p.Value.Count).ToList();
+            this._allItems = this.DependencyLocator?.LinearDependedRows?.OrderBy(p=> p.Value.Count)?.ToList() ?? new List<KeyValuePair<TModel, ReadOnlyCollection<TModel>>>();
             this.Idx = 0;
         }
 
         private void PaintItems(TModel mainItem, IList<TModel> items ,Color color)
         {
-            if (mainItem != null)
+            try
             {
-                var c = color;
-                var shiftedColor = Color.FromArgb(c.A,(int)(c.R * 0.8), (int)(c.G * 0.8), (int)(c.B * 0.8));//make darker
-                var mainItemView = this.GetView(mainItem);
-                this.PaintItem(mainItemView, shiftedColor);
+                this.GridView.SuspendParentDrawing();
+                this.GridView.SuspendLayout();//in order to avoid cell formatting when itterating rows
+
+                this.PrePaintingItems?.Invoke(this, EventArgs.Empty);
+
+                if (mainItem != null)
+                {
+                    var c = color;
+                    var shiftedColor = Color.FromArgb(c.A, (int)(c.R * 0.8), (int)(c.G * 0.8), (int)(c.B * 0.8));//make darker
+                    var mainItemView = this.GetView(mainItem);
+                    this.PaintItem(mainItemView, shiftedColor);
+                }
+                for (int i = 0; i < items.Count; i++)
+                {
+                    var item = items[i];
+                    var itemView = this.GetView(item);
+                    this.PaintItem(itemView, color);
+                }
             }
-            for (int i = 0; i < items.Count; i++)
+            finally
             {
-                var item = items[i];
-                var itemView = this.GetView(item);
-                this.PaintItem(itemView, color);
+                this.GridView.ResumeLayout(false);
+                this.GridView.ResumeParentDrawing(true);
             }
         }
 

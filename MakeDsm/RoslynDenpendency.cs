@@ -42,8 +42,8 @@ namespace MakeDsm
                     var declaringType_Interface = tree.GetRoot().DescendantNodesAndSelf().OfType<InterfaceDeclarationSyntax>();
                     var declaringType = (TypeDeclarationSyntax)declaringType_Classes?.LastOrDefault() ?? declaringType_Interface.LastOrDefault();
                     ret.Add(declaringType);
-                    var dt = declaringType.ToString();
-                    var dti = declaringType.Identifier.ToString();
+                    //var dt = declaringType.ToString();
+                    //var dti = declaringType.Identifier.ToString();
 
                 }
             }

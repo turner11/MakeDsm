@@ -102,21 +102,25 @@ namespace MakeDsm
             }
 
 
-            Func<DataRow, DataColumn, bool> IsEmpty = (r, c) => String.IsNullOrWhiteSpace(r[c].ToString());
+
+                    Func<DataRow, DataColumn, bool> IsEmpty = (r, c) => String.IsNullOrWhiteSpace(r[c].ToString());
             var dataColumns = dt.Columns.Cast<DataColumn>().Where(c=> !NonDataColumns.Contains(c.ColumnName)).ToArray();
 
             //remove empty rows
             foreach (var dr in dt.Rows.Cast<DataRow>().ToArray())
             {
-
-                if (dataColumns.All(c => IsEmpty(dr, c)))
+                var noData = dataColumns.All(c => IsEmpty(dr, c));
+                var allHasData = dataColumns.All(c => !IsEmpty(dr, c));
+                if (noData || allHasData)
                     dt.Rows.Remove(dr);
             }
 
             //remove empty columns
             foreach (var clm in dataColumns)
             {
-                if (dt.AsEnumerable().All(dr => IsEmpty(dr, clm)))
+                var noData = dt.AsEnumerable().All(dr => IsEmpty(dr, clm));
+                var allHasData = dt.AsEnumerable().All(dr => !IsEmpty(dr, clm));
+                if (noData || allHasData)
                     dt.Columns.Remove(clm);
             }
 

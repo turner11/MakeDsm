@@ -3,6 +3,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -24,6 +25,48 @@ public static class RoslynExtentions
 
         return ret;
     }
+
+    public static ImmutableArray<T> GetAccessibleMembersInThisAndBaseTypes<T>(this ITypeSymbol containingType, ISymbol within) where T : class, ISymbol
+    {
+        if (containingType == null)
+        {
+            return ImmutableArray<T>.Empty;
+        }
+
+        var types = containingType.GetBaseTypesAndThis();
+        return types.SelectMany(x => x.GetMembers().OfType<T>().Where(m => m.IsAccessibleWithin(within)))
+                    .ToImmutableArray();
+    }
+
+    public static IEnumerable<ITypeSymbol> GetBaseTypesAndThis(this ITypeSymbol type)
+    {
+        var current = type;
+        while (current != null)
+        {
+            yield return current;
+            current = current.BaseType;
+        }
+    }
+
+    public static bool IsAccessibleWithin(
+           this ISymbol symbol,
+           ISymbol within,
+           ITypeSymbol throughTypeOpt = null)
+    {
+        if (within is IAssemblySymbol)
+        {
+            return symbol.IsAccessibleWithin((IAssemblySymbol)within, throughTypeOpt);
+        }
+        else if (within is INamedTypeSymbol)
+        {
+            return symbol.IsAccessibleWithin((INamedTypeSymbol)within, throughTypeOpt);
+        }
+        else
+        {
+            throw new ArgumentException();
+        }
+    }
+
     ///// <summary>
     ///// Finds all references.
     ///// </summary>

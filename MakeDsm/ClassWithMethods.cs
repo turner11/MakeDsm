@@ -38,7 +38,7 @@ namespace MakeDsm
         {
             var mNames = this.PublicMethods.Select(m => m.Identifier.ValueText);
             var pNames = this.PublicProperties.Select(p => p.Identifier.ValueText);
-            pNames = new List<string>(); //checking if would be better with no properties
+            //pNames = new List<string>(); //checking if would be better with no properties
 
             var ret = mNames.Union(pNames).Distinct().ToList(); 
             return ret;

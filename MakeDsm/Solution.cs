@@ -99,14 +99,26 @@ namespace MakeDsm
                 foreach (var t in types)
                 {
                     var semanticModel = compilation.GetSemanticModel(t.SyntaxTree);
-                    var classSymbols = semanticModel.GetDeclaredSymbol(t);
+                    //var classSymbols = semanticModel.GetDeclaredSymbol(t);
 
-                    var methods = t.DescendantNodes().OfType<MethodDeclarationSyntax>().ToList();
-                    var properties = t.DescendantNodes().OfType<PropertyDeclarationSyntax>().ToList();
+                   //var methods = t.DescendantNodes().OfType<MethodDeclarationSyntax>().ToList();
+                   //var properties = t.DescendantNodes().OfType<PropertyDeclarationSyntax>().ToList();
+
 
                     var mathodsAndProperties = new List<MemberDeclarationSyntax>();
+                    //mathodsAndProperties.AddRange(methods);
+                    //mathodsAndProperties.AddRange(properties);
+
+                    var typeT = (ITypeSymbol)semanticModel.GetDeclaredSymbol(t);
+                    var members = typeT.GetBaseTypesAndThis().SelectMany(n => n.GetMembers()).ToList();
+                    var membersSyntax = members.SelectMany(m => m.DeclaringSyntaxReferences.Select(r => r.GetSyntax())).ToList();
+                    
+                    var methods = membersSyntax.OfType<MethodDeclarationSyntax>().ToList();
+                    var properties = membersSyntax.OfType<PropertyDeclarationSyntax>().ToList();
+
                     mathodsAndProperties.AddRange(methods);
                     mathodsAndProperties.AddRange(properties);
+
 
                     res[t] = mathodsAndProperties;
                     
